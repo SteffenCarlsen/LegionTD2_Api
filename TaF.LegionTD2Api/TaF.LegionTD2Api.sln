@@ -1,0 +1,33 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+VisualStudioVersion = 12.0.0.0
+MinimumVisualStudioVersion = 10.0.0.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaF.LegionTD2Api", "src\TaF.LegionTD2Api\TaF.LegionTD2Api.csproj", "{788E2833-A654-4281-AAEF-B16162D12019}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaF.LegionTD2Api.Test", "src\TaF.LegionTD2Api.Test\TaF.LegionTD2Api.Test.csproj", "{19F1DEBC-DE5E-4517-8062-F000CD499087}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{CF50DB45-81AE-413F-A8DA-1059B497A255}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{788E2833-A654-4281-AAEF-B16162D12019}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{788E2833-A654-4281-AAEF-B16162D12019}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{788E2833-A654-4281-AAEF-B16162D12019}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{788E2833-A654-4281-AAEF-B16162D12019}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19F1DEBC-DE5E-4517-8062-F000CD499087}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19F1DEBC-DE5E-4517-8062-F000CD499087}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19F1DEBC-DE5E-4517-8062-F000CD499087}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19F1DEBC-DE5E-4517-8062-F000CD499087}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF50DB45-81AE-413F-A8DA-1059B497A255}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF50DB45-81AE-413F-A8DA-1059B497A255}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF50DB45-81AE-413F-A8DA-1059B497A255}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF50DB45-81AE-413F-A8DA-1059B497A255}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
