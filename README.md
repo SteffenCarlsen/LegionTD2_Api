@@ -1,10 +1,10 @@
 # LegionTD2_API - the C# library for the LTD2ApiV2
 
-This is the C# library using the official Legion TD 2 public API. The API endpoint is https://apiv2.legiontd2.com/ <br />.
+This is the C# library using the official Legion TD 2 public API. The API endpoint is https://apiv2.legiontd2.com/ <br />
 
-You can generate your key at <a href='https://developer.legiontd2.com/'>developer.legiontd2.com</a>.
+You can generate your key at <a href='https://developer.legiontd2.com/'>developer.legiontd2.com</a>
 
-For icons, emotes or splash art images you can use our CDN: <a href='https://cdn.legiontd2.com/icons/Yozora.png'>cdn.legiontd2.com</a><br />.
+For icons, emotes or splash art images you can use our CDN: <a href='https://cdn.legiontd2.com/icons/Yozora.png'>cdn.legiontd2.com</a><br />
 
 The current limits are 15 requests per second / 10k burst requests and a maximum of 10k requests per day. The library naturally implements this limit, but allows you to overwrite this in the constructor for `LegionTD2Api`.
 
@@ -118,15 +118,3 @@ Class | Method | HTTP request | Description
  - [Model.Stats](docs/Stats.md)
  - [Model.UnitStats](docs/UnitStats.md)
  - [Model.Wave](docs/Wave.md)
-
-
-## Documentation for Authorization
-
-
-### api_key
-
-- **Type**: API key
-
-- **API key parameter name**: x-api-key
-- **Location**: HTTP header
-
