@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="OpenAPI\" />
         <Folder Include="Properties" />
     </ItemGroup>
 </Project>

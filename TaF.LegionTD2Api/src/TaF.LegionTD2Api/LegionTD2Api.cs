@@ -21,7 +21,7 @@ public class LegionTD2Api : ILegionTD2Api
         _client.SetRateLimiter(rateLimites);
     }
     
-    public async Task<Player> GetPlayerByIdAsync(int id)
+    public async Task<Player> GetPlayerByIdAsync(string id)
     {
         return await _client.GetAsync<Player>($"/players/byId/{id}");
     }
@@ -31,17 +31,17 @@ public class LegionTD2Api : ILegionTD2Api
         return await _client.GetAsync<Player>($"/players/byName/{name}");
     }
 
-    public async Task<List<Player>> GetBestFriendsByIdAsync(int id, int limit = 10, int offset = 0)
+    public async Task<List<Player>> GetBestFriendsByIdAsync(string id, int limit = 10, int offset = 0)
     {
         return await _client.GetAsync<List<Player>>($"/players/bestFriends/{id}?limit={limit}&offset={offset}");
     }
 
-    public async Task<List<Match>> GetMatchHistoryByPlayerId(int id, int limit = 10, int offset = 0, bool countresults = false)
+    public async Task<List<Match>> GetMatchHistoryByPlayerId(string id, int limit = 10, int offset = 0, bool countresults = false)
     {
         return await _client.GetAsync<List<Match>>($"/players/matchHistory/{id}?limit={limit}&offset={offset}");   
     }
 
-    public async Task<PlayersData> GetPlayerStatsById(int id)
+    public async Task<PlayersData> GetPlayerStatsById(string id)
     {
         return await _client.GetAsync<PlayersData>($"/players/stats/{id}");
     }
@@ -51,13 +51,13 @@ public class LegionTD2Api : ILegionTD2Api
         return await _client.GetAsync<List<PlayersData>>($"/players/stats?limit={limit}&offset={offset}&{playerSorting.GetEnumDescription()}&sortDirection={sortDirection}");  
     }
 
-    public async Task<UnitStats> GetUnitByIdAsync(int id, string patch = "")
+    public async Task<UnitStats> GetUnitByIdAsync(string id, string patch = "")
     {
         var patchString = string.IsNullOrWhiteSpace(patch) ? patch : $"?version={patch}";
         return await _client.GetAsync<UnitStats>($"/units/byId/{id}" + patchString);
     }
     
-    public async Task<UnitStats> GetUnitByIdCurrentPatchAsync(int id)
+    public async Task<UnitStats> GetUnitByIdCurrentPatchAsync(string id)
     {
         return await GetUnitByIdAsync(id, string.Empty);
     }
@@ -67,57 +67,57 @@ public class LegionTD2Api : ILegionTD2Api
         var patchString = string.IsNullOrWhiteSpace(patch) ? patch : $"?version={patch}";
         return await _client.GetAsync<UnitStats>($"/units/byName/{name}" + patchString);
     }
-
-    public async Task<List<UnitStats>> GetUnitByNameAsync(string patch = "")
-    {
-        var patchString = string.IsNullOrWhiteSpace(patch) ? patch : $"?version={patch}";
-        return await _client.GetAsync<List<UnitStats>>($"/units/byVersion/" + patchString);
-    } 
     
-    public async Task<List<UnitStats>> GetUnitByNameCurrentPatchAsync()
+    public async Task<UnitStats> GetUnitByNameCurrentPatchAsync(string unitName)
     {
-        return await GetUnitByNameAsync(string.Empty);
+        return await GetUnitByNameAsync(unitName, string.Empty);
     }
 
     public async Task<List<Match>> GetGamesByFiltersAsync(QueueType queueType, DateTime dateBefore, DateTime dateAfter, string patch = "",
         int limit = 50, int offset = 50, GameSortBy gameSortBy = GameSortBy.Date,
         SortDirection sortDirection = SortDirection.Ascending, bool includeDetails = false, bool countResults = false)
     {
-        throw new NotImplementedException();
+        var query = new QueryBuilder()
+            .Add("queueType", queueType.ToString())
+            .Add("dateBefore", dateBefore.ToQueryDateString())
+            .Add("dateAfter", dateAfter.ToQueryDateString())
+            .Add("patch", patch);
+
+        return await _client.GetAsync<List<Match>>($"/games" + query.Build());
     }
 
-    public async Task<Match> GetGamesByFiltersAsync(Guid id)
+    public async Task<Match> GetGamesById(string id)
     {
-        throw new NotImplementedException();
+        return await _client.GetAsync<Match>($"/games/byId/{id}");
     }
 
     public async Task<Legion> GetLegionById(string id)
     {
-        throw new NotImplementedException();
+        return await _client.GetAsync<Legion>($"/info/legions/byId/{id}");
     }
 
-    public async Task<Legion> GetLegions(int limit = 10, int offset = 0, bool playable = true)
+    public async Task<List<Legion>> GetLegions(int limit = 10, int offset = 0, bool playable = true)
     {
-        throw new NotImplementedException();
+        return await _client.GetAsync<List<Legion>>($"/info/legions/{offset}/{limit}?playable={playable.ToString().ToLower()}");
     }
 
     public async Task<Wave> GetWaveById(string id)
     {
-        throw new NotImplementedException();
+        return await _client.GetAsync<Wave>($"/info/waves/byId/{id}");
     }
 
-    public async Task<List<Wave>> GetWaveById(int limit = 10, int offset = 0)
+    public async Task<List<Wave>> GetWaves(int limit = 10, int offset = 0)
     {
-        throw new NotImplementedException();
+        return await _client.GetAsync<List<Wave>>($"/info/waves/{offset}/{limit}");
     }
 
     public async Task<Spell> GetSpellById(string id)
     {
-        throw new NotImplementedException();
+        return await _client.GetAsync<Spell>($"/info/spells/byId/{id}");
     }
 
-    public async Task<List<Spell>> GetSpellById(int limit = 10, int offset = 0, bool enabled = true)
+    public async Task<List<Spell>> GetSpells(int limit = 10, int offset = 0, bool enabled = true)
     {
-        throw new NotImplementedException();
+        return await _client.GetAsync<List<Spell>>($"/info/spells/{offset}/{limit}?enabled={enabled.ToString().ToLower()}");
     }
 }

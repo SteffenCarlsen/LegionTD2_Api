@@ -9,7 +9,7 @@ namespace TaF.LegionTD2Api.InternalHttpClient
 {
     public partial class InternalClient
     {
-        private const string BaseUrl = "https://apiv2.legiontd2.com/";
+        private const string BaseUrl = "https://apiv2.legiontd2.com";
 
         public InternalClient(string apikey)
         {

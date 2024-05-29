@@ -1,0 +1,3323 @@
+openapi: 3.0.0
+info:
+  title: LTD2ApiV2
+  description: |-
+    This is the official Legion TD 2 public API. The new API endpoint is https://apiv2.legiontd2.com/ <br /> You can generate your key at <a href='https://developer.legiontd2.com/'>developer.legiontd2.com</a><br />In your requests add the HTTP header 'x-api-key' and your secret key from the developer portal. <br /><br />For icons, emotes or splash art images you can use our CDN: <a href='https://cdn.legiontd2.com/icons/Yozora.png'>cdn.legiontd2.com</a>. <br /> If you prefer to host the icons on your own server you can find the image files in your game files: 'Steam\\steamapps\\common\\Legion TD 2\\Legion TD 2_Data\\uiresources\\AeonGT\\hud\\img\\icons'<br /> <br /> 
+    The current limits are 5 requests per second, 100 burst requests and a maximum of 1k requests per day. If you need a higher limit, reach out to us in discord or through our support portal. <br /> <br />Starting with Season 2023 the API will only provide games that are not older than one year. If you need to retrieve older games you can find manually import the matches from this archive:<br> <a href='https://cdn.legiontd2.com/games-archive/2018-2021/games.bson.zip.001'>Part 1</a> <a href='https://cdn.legiontd2.com/games-archive/2018-2021/games.bson.zip.002'>Part 2</a> <a href='https://cdn.legiontd2.com/games-archive/2018-2021/games.bson.zip.003'>Part 3</a> <a href='https://cdn.legiontd2.com/games-archive/2018-2021/games.bson.zip.004'>Part 4</a> <a href='https://cdn.legiontd2.com/games-archive/2018-2021/games.bson.zip.005'>Part 5</a> <a href='https://cdn.legiontd2.com/games-archive/2018-2021/games.bson.zip.006'>Part 6</a><br /> Instructions to restore the archive (requires a mongodb instance): <br /> <ol><li>Install <a href='https://www.mongodb.com/try/download/database-tools'>MongoDB Database Tools</a> </li><li>Unzip the archive. It should contain one file (games.bson.gz) which is around 22gb</li><li>Run the command .\mongorestore.exe --db=[Your local database name] C:\\path\\to\\games.bson\\games.bson.gz --gzip [connection string]</li><li>For further instructions, check <a href='https://www.mongodb.com/docs/database-tools/mongorestore/'>The official documentation</a></li></ol> <br /><br />If you have any other questions, feel free to ask in the &#35;api channel on the <a href='https://discord.gg/4K4xwCz2DN'>Legion TD 2 Contributors Discord</a>
+  contact:
+    name: Legion TD 2 support
+    url: http://legiontd2.com/support
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: https://apiv2.legiontd2.com
+    description: Legion TD 2 API Live
+tags:
+  - name: Player
+    description: Player profiles and match history
+  - name: Units
+    description: Versioned unit stats
+  - name: Games
+    description: Match specific information
+  - name: Info
+    description: "Static information like legions, translations or abilities"
+paths:
+  /players/byId/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Player
+      summary: Find player by ID
+      description: Returns a single player profile
+      operationId: getPlayerById
+      parameters:
+        - name: id
+          in: path
+          description: Account ID of the player
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Player"
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: ID
+          required: false
+          schema:
+            type: string
+        - name: name
+          in: path
+          description: Name
+          required: false
+          schema:
+            type: string
+        - name: version
+          in: path
+          description: Version
+          required: false
+          schema:
+            type: string
+        - name: offset
+          in: path
+          description: Offset
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: path
+          description: Limit
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content: {}
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /players/byName/{name}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Player
+      summary: Find player by their nickname
+      description: Returns a single player profile
+      operationId: getPlayerByName
+      parameters:
+        - name: name
+          in: path
+          description: Display name of the player
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Player"
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: name
+          in: path
+          description: Name of the player
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /players/bestFriends/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Player
+      summary: Find other players that had common games with this player
+      description:
+        Returns one or more player profiles and how many games they played
+        together.
+      operationId: getPlayerFriends
+      parameters:
+        - name: id
+          in: path
+          description: ID of the player
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          required: false
+          style: form
+          explode: true
+          schema:
+            maximum: 50
+            minimum: 0
+            type: integer
+            format: int32
+            default: 10
+        - name: offset
+          in: query
+          description: Number of records to skip for pagination
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerFriends"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: Account ID of the player
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /players/matchHistory/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Player
+      summary: Get most recent matches of this player
+      description: Returns one or more matches of this player
+      operationId: getPlayerHistory
+      parameters:
+        - name: id
+          in: path
+          description: Account ID of the player
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          required: false
+          style: form
+          explode: true
+          schema:
+            maximum: 50
+            minimum: 0
+            type: integer
+            format: int32
+            default: 10
+        - name: offset
+          in: query
+          description: Number of records to skip for pagination
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            maximum: 50000
+            type: integer
+            format: int32
+            default: 0
+        - name: countResults
+          in: query
+          description: Include the amount of entries for this query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Match"
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: Account ID of the player
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /players/stats/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Player
+      summary: "Get player statistics (wins, losses, etc.)"
+      description: Returns stats of the specified player
+      operationId: getPlayerStats
+      parameters:
+        - name: id
+          in: path
+          description: ID of the player
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stats"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: Account ID of the player
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /players/stats:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Player
+      summary: "Get sorted player statistics (wins, losses, etc.)"
+      description: Returns one or more player profiles and their stats
+      operationId: getSortedPlayerStats
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          required: false
+          style: form
+          explode: true
+          schema:
+            maximum: 1000
+            minimum: 0
+            type: integer
+            format: int32
+            default: 100
+        - name: offset
+          in: query
+          description: Number of records to skip for pagination
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sortBy
+          in: query
+          description: Sort stats by this value (has to be a valid stats key)
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: overallElo
+            enum:
+              - overallElo
+              - overallPeakElo
+              - secondsPlayed
+              - gamesWithoutCard
+              - gamesPlayed
+              - totalXp
+              - ladderPoints
+              - classicElo
+              - classicPeakElo
+              - wins
+              - losses
+        - name: sortDirection
+          in: query
+          description: Specify sort direction. 1 is ASC, -1 is DESC
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: number
+            default: -1
+            enum:
+              - 1
+              - -1
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stats"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /units/byId/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Units
+      summary: Find unit by ID
+      description: Returns a single unit
+      operationId: getUnitById
+      parameters:
+        - name: id
+          in: path
+          description: ID of the unit
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: version
+          in: query
+          description:
+            Patch version snapshot of this unit. If no value is provided
+            it will default to the most recent patch
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnitStats"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: ID of the unit
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /units/byName/{name}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Units
+      summary: Find unit by name
+      description: Returns a single unit
+      operationId: getUnitByName
+      parameters:
+        - name: name
+          in: path
+          description: Name of the unit
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: version
+          in: query
+          description:
+            Patch version snapshot of this unit. If no value is provided
+            it will default to the most recent patch
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnitStats"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: name
+          in: path
+          description: Name of the Unit
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /units/byVersion/{version}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Units
+      summary:
+        Find multiple units by version. Usefull for comparing stats between
+        patches.
+      description: Returns one or more units on a specific version.
+      operationId: getUnitByVersion
+      parameters:
+        - name: version
+          in: path
+          description: Patch version of the unit
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of records to return (max 250 = all units)
+          required: false
+          style: form
+          explode: true
+          schema:
+            maximum: 250
+            minimum: 0
+            type: integer
+            format: int32
+            default: 25
+        - name: offset
+          in: query
+          description: Number of records to skip for pagination
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: enabled
+          in: query
+          description:
+            "If not set it will return both enabled and disabled units. If set to true only returns enabled units. If set to false, this will return only disabled units. (Note that some units that are used in the game like pack_rat_nest_unit_id are marked as disabled)"
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UnitStats"
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /games:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Games
+      summary: Find match by different filters (not older than one year)
+      description: Returns one or more matches based on patch version
+      operationId: getMatchesByFilter
+      parameters:
+        - name: version
+          in: query
+          description: Patch version of the match
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          required: false
+          style: form
+          explode: true
+          schema:
+            maximum: 50
+            minimum: 0
+            type: integer
+            format: int32
+            default: 50
+        - name: offset
+          in: query
+          description: Number of records to skip for pagination
+          required: false
+          style: form
+          explode: true
+          schema:
+            maximum: 50000
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sortBy
+          in: query
+          description: Sort games before fetching and limiting by this value
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: date
+            enum:
+              - date
+              - gameElo
+              - wave
+              - queueType
+              - gameLength
+        - name: sortDirection
+          in: query
+          description: Specify sort direction. 1 is ASC, -1 is DESC
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: number
+            default: 1
+            enum:
+              - 1
+              - -1
+        - name: dateBefore
+          in: query
+          description: Return games that started before this date/time in UTC (YYYY-MM-DD HH:MM:SS)
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: dateAfter
+          in: query
+          description: Return games that started after this date/time in UTC (YYYY-MM-DD HH:MM:SS)
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: includeDetails
+          in: query
+          description: Include player specific match details
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+            default: false
+        - name: countResults
+          in: query
+          description: Include the amount of entries for this query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+            default: false
+        - name: queueType
+          in: query
+          description: Specify queue type of the match
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/QueueType"
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Match"
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: version
+          in: path
+          description: Patch Version of the match
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /info/legions/byId/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Info
+      summary: Find a legion by ID
+      description: Returns a single legion by ID
+      operationId: getLegionsById
+      parameters:
+        - name: id
+          in: path
+          description: ID of the legion
+          required: true
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Legion"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: ID of the legion
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /games/byId/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Games
+      summary: Find match by ID
+      description: Returns a single match (that is not older than one year)
+      operationId: getMatchById
+      parameters:
+        - name: id
+          in: path
+          description: ID of the match
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: includeDetails
+          in: query
+          description: Include player specific match details
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Match"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: ID of the match
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /info/legions/{offset}/{limit}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Info
+      summary: Contains all playable and unplayable legions.
+      description: Returns one or more legions
+      operationId: getLegions
+      parameters:
+        - name: limit
+          in: path
+          description: Maximum number of records to return
+          required: true
+          explode: true
+          schema:
+            maximum: 50
+            minimum: 0
+            type: integer
+            format: int32
+            default: 10
+        - name: offset
+          in: path
+          description: Number of records to skip for pagination
+          required: true
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+        - name: playable
+          in: query
+          description:
+            Only return playable legions. Unplayable legions usually contain
+            NPCs like the king or unfinished legions that are still have unreleased
+            units.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+            default: true
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Legion"
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: "limit"
+          in: "path"
+          description: Limit
+          required: true
+          schema:
+            type: "string"
+        - name: "offset"
+          in: "path"
+          description: Offset
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /info/waves/byId/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Info
+      summary: Find a wave by ID
+      description: Returns a single wave by ID
+      operationId: getWavesById
+      parameters:
+        - name: id
+          in: path
+          description: ID of the wave
+          required: true
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wave"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: ID of the wave
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /info/waves/{offset}/{limit}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Info
+      summary: Contains information about all waves
+      description: Returns one or more waves
+      operationId: getWaves
+      parameters:
+        - name: limit
+          in: path
+          description: Maximum number of records to return
+          required: true
+          explode: true
+          schema:
+            maximum: 50
+            minimum: 0
+            type: integer
+            format: int32
+            default: 10
+        - name: offset
+          in: path
+          description: Number of records to skip for pagination
+          required: true
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Wave"
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: "limit"
+          in: "path"
+          description: Limit
+          required: true
+          schema:
+            type: "string"
+        - name: "offset"
+          in: "path"
+          description: Offset
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /info/spells/byId/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Info
+      summary: Find a legion spell by ID
+      description: Returns a single legion spell by ID
+      operationId: getSpellsById
+      parameters:
+        - name: id
+          in: path
+          description: ID of the legion
+          required: true
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Spell"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: ID of the spell
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /info/spells/{offset}/{limit}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Info
+      summary: Contains all enabled or disabled legion spells.
+      description: Returns one or more legion spells
+      operationId: getSpells
+      parameters:
+        - name: limit
+          in: path
+          description: Maximum number of records to return
+          required: true
+          explode: true
+          schema:
+            maximum: 50
+            minimum: 0
+            type: integer
+            format: int32
+            default: 10
+        - name: offset
+          in: path
+          description: Number of records to skip for pagination
+          required: true
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+        - name: enabled
+          in: query
+          description:
+            Only return enabled spells. Disabled spells are either experimental
+            or deprecated
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+            default: true
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Spell"
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: "limit"
+          in: "path"
+          description: Limit
+          required: true
+          schema:
+            type: "string"
+        - name: "offset"
+          in: "path"
+          description: Offset
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /info/abilities/byId/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Info
+      summary: Find an ability by ID
+      description: Returns a single ability by ID
+      operationId: getAbilitiesById
+      parameters:
+        - name: id
+          in: path
+          description: ID of the ability
+          required: true
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ability"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: ID of the ability
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /info/abilities/{offset}/{limit}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Info
+      summary: Contains information about all abilities
+      description: Returns one or more abilities
+      operationId: getAbilities
+      parameters:
+        - name: limit
+          in: path
+          description: Maximum number of records to return
+          required: true
+          explode: true
+          schema:
+            maximum: 50
+            minimum: 0
+            type: integer
+            format: int32
+            default: 10
+        - name: offset
+          in: path
+          description: Number of records to skip for pagination
+          required: true
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ability"
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: "limit"
+          in: "path"
+          description: Limit
+          required: true
+          schema:
+            type: "string"
+        - name: "offset"
+          in: "path"
+          description: Offset
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /info/research/byId/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Info
+      summary: Find a research (for example king upgrades) by ID
+      description: Returns a single research by ID
+      operationId: getResearchesById
+      parameters:
+        - name: id
+          in: path
+          description: ID of the research
+          required: true
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Research"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: ID of the research
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /info/research/{offset}/{limit}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Info
+      summary:
+        "Contains information about all researches (king upgrades, hiring workers,\
+        \ etc.)"
+      description: Returns one or more researches
+      operationId: getResearches
+      parameters:
+        - name: limit
+          in: path
+          description: Maximum number of records to return
+          required: true
+          explode: true
+          schema:
+            maximum: 50
+            minimum: 0
+            type: integer
+            format: int32
+            default: 10
+        - name: offset
+          in: path
+          description: Number of records to skip for pagination
+          required: true
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Research"
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: "limit"
+          in: "path"
+          description: Limit
+          required: true
+          schema:
+            type: "string"
+        - name: "offset"
+          in: "path"
+          description: Offset
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /info/descriptions/{id}:
+    get:
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      tags:
+        - Info
+      summary: Use this to retrieve a specific description by its ID
+      description: Returns one description text
+      operationId: getDescriptionById
+      parameters:
+        - name: id
+          in: path
+          description: ID of the description
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Description"
+        "400":
+          description: bad input parameter
+      security:
+        - api_key: []
+    options:
+      operationId: preflightCheck
+      parameters:
+        - name: id
+          in: path
+          description: ID of the description
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  /{proxy+}:
+    x-amazon-apigateway-any-method:
+      produces:
+      - "application/json"
+      parameters:
+      - name: "proxy"
+        in: "path"
+        required: true
+        type: "string"
+      responses: {}
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:368035721278:function:LTD2-APIv2-REST-Server/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        cacheNamespace: "ntgzux"
+        cacheKeyParameters:
+        - "method.request.path.proxy"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+components:
+  schemas:
+    Player:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        id:
+          type: string
+          example: DCCE8539810097B0
+        name:
+          type: string
+          example: Lisk
+        avatarUrl:
+          type: string
+          example: Icons/Season5/SeniorMaster.png
+        guildTag:
+          type: string
+          example: CUTE
+        guildName:
+          type: string
+          example: Kawaii
+        guildAvatar:
+          type: string
+          example: Icons/Secret/NoTouchyYozora.png
+      example:
+        avatarUrl: Icons/Season5/SeniorMaster.png
+        guildAvatar: Icons/Secret/NoTouchyYozora.png
+        name: Lisk
+        guildTag: CUTE
+        id: DCCE8539810097B0
+        guildName: Kawaii
+    UnitStats:
+      type: object
+      properties:
+        name:
+          type: string
+        hp:
+          title: Health points
+          type: string
+        mp:
+          title: Mana points
+          type: string
+        attackSpeed:
+          type: string
+        attackSpeedInverted:
+          type: string
+        moveSpeed:
+          type: string
+        flags:
+          type: string
+          example: "flags_ground,flags_mechanical"
+          enum:
+            - Boss
+            - Building
+            - Dead
+            - Air
+            - Ground
+            - Immune
+            - Cannot Be Healed
+            - King
+            - Mechnical
+            - Organic
+            - Summoned
+            - Undead
+            - Unselectable
+            - Invulnerable
+            - Harvestable
+            - Ghost
+        attackRange:
+          type: string
+        legionId:
+          type: string
+        tooltip:
+          title:
+            Web friendly tooltip that has replaced variables with current values
+            (unlike the description)
+          type: string
+        goldCost:
+          title: The cost for this upgrade/base unit. For the total cost check totalValue
+          type: string
+        iconPath:
+          title:
+            You can find the image files in your game client "Legion TD 2\Legion
+            TD 2_Data\uiresources\AeonGT\hud\img"
+          type: string
+          example: Icons/Honeyflower.png
+        infoTier:
+          type: string
+          example: Tier-4
+        moveType:
+          type: string
+          enum:
+            - Ground
+            - Air
+            - Hover
+            - None
+        moveSpeedText:
+          type: string
+          enum:
+            - Average
+            - Very Slow
+            - Very fast
+        abilities:
+          type: array
+          description: Contains ability ids
+          items:
+            type: string
+        armorType:
+          type: string
+          enum:
+            - Arcane
+            - Fortified
+            - Immaterial
+            - Natural
+            - Swift
+        goldValue:
+          title:
+            Used by units like hydra to specify total value since it can't be
+            purchased directly
+          type: string
+        isEnabled:
+          type: boolean
+        sortHelper:
+          type: string
+          description: Includes a sortable string with the syntax legion.tier.value.name
+          example: grove_legion_id.T4.130.Honeyflower
+        unitClass:
+          type: string
+          description: |
+            Creatures = Units that spawn every wave <br>
+            Fighter = Units that can be deployed by the player for gold <br>
+            King = Base that has to be defended <br>
+            Mercenary = Units that can be hired for mythium and get sent to the opponents lane <br>
+            Worker = Units that collect mythium <br>
+          enum:
+            - Creature
+            - Fighter
+            - King
+            - Mercenary
+            - Worker
+            - None
+        attackMode:
+          title: Melee/Ranged
+          type: string
+        attackType:
+          type: string
+          description: "Note: Siege is no longer used"
+          enum:
+            - Impact
+            - Magic
+            - Pierce
+            - Pure
+            - Siege
+        goldBounty:
+          title: Bounty gained from killing this unit (used for Mercenaries and Creatures)
+          type: string
+        modelScale:
+          title: 3D Model scale
+          type: number
+        splashPath:
+          title:
+            High definition images can be found in the game files at Legion TD
+            2\Legion TD 2_Data\uiresources\AeonGT\hud\img\splashes
+          type: string
+        totalValue:
+          title: Includes cost from previous upgrades
+          type: string
+        upgradesTo:
+          type: array
+          items:
+            type: string
+            description: Unit Ids of upgrade forms
+        incomeBonus:
+          title: Income gained from deploying this unit
+          type: string
+        mythiumCost:
+          type: string
+        upgradesFrom:
+          type: string
+        categoryClass:
+          title: Standard/Special/Passive
+          type: string
+        sketchfabUrl:
+          title: Link to the sketchfab 3D model
+          type: string
+        descriptionId:
+          type: string
+        maxDamage:
+          type: string
+        baseDamage:
+          type: string
+        expectedDamage:
+          type: string
+        avgHp:
+          title: Average HP of the same tier
+          type: string
+        avgHpDiff:
+          title: Difference of the average HP of the same tier and this units HP
+          type: string
+        avgDmg:
+          title: Average damage of the same tier
+          type: string
+        avgDmgDiff:
+          title: Difference of the average damage of the same tier and this units damage
+          type: string
+        avgAspd:
+          title: Average attack speed of the same tier
+          type: string
+        avgAspdDiff:
+          title:
+            Difference of the average attack speed of the same tier and this
+            units attack speed
+          type: string
+        avgCost:
+          title: Average cost of the same tier
+          type: string
+        avgCostDiff:
+          title: Difference of the average cost of the same tier and this units cost
+          type: string
+        avgMspd:
+          title: Average move speed of the same tier
+          type: string
+        avgMspdDiff:
+          title:
+            Difference of the average move speed of the same tier and this units
+            move speed
+          type: string
+      example:
+        attackRange: "2"
+        goldcost: "7"
+        mythiumCost: "7"
+        maxDamage: "1"
+        hp: "100"
+        flags: "flags_ground,flags_mechanical"
+        tooltip: tooltip
+        armorType: Arcane
+        avgDmg: "1.173074"
+        avgDmgDiff: -6.32,
+        sortHelper: grove_legion_id.T4.130.Honeyflower
+        avgCostDiff: "9.36931027"
+        avgMspdDiff: "8.76204201"
+        isEnabled: true
+        abilities:
+          - abilities
+          - abilities
+        avgHpDiff: "7.4577447736"
+        descriptionId: descriptionId
+        attackMode: attackMode
+        avgHp: "6.84685269835263"
+        incomeBonus: "4"
+        sketchfabUrl: sketchfabUrl
+        avgMspd: "6.683562403749"
+        unitClass: Creature
+        totalValue: totalValue
+        mp: "6"
+        upgradesTo:
+          - upgradesTo
+          - upgradesTo
+        legionId: legionId
+        modelScale: "2.0271230230"
+        expectedDamage: "1.4894159"
+        splashPath: splashPath
+        infoTier: Tier-4
+        goldValue: "9"
+        moveType: Ground
+        attackSpeedInverted: "5.9621339166831"
+        moveSpeed: "5"
+        goldBounty: "3"
+        attackType: Impact
+        upgradesFrom: upgradesFrom
+        attackSpeed: "1.4658129805029"
+        name: name
+        avgAspdDiff: "5.0250047915202"
+        baseDamage: "1"
+        iconPath: Icons/Honeyflower.png
+        moveSpeedText: Average
+        avgAspd: "1.01"
+        avgCost: "9.9657812178"
+        categoryClass: categoryClass
+    Legion:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        _id:
+          type: string
+          example: element_legion_id
+        name:
+          type: string
+          example: Element
+        category:
+          type: string
+          example: legions
+        iconPath:
+          type: string
+          example: Icons/Element.png
+        playable:
+          type: boolean
+          example: true
+      example:
+        name: Element
+        _id: element_legion_id
+        iconPath: Icons/Element.png
+        playable: true
+    Wave:
+      required:
+        - iconPath
+        - id
+        - levelNum
+        - name
+        - prepareTime
+        - totalReward
+        - unitId
+      type: object
+      properties:
+        _id:
+          type: string
+          example: level16_wave_id
+        name:
+          type: string
+          example: Quadrapuses
+        waveUnitId:
+          type: string
+          example: octopus_unit_id
+        amount:
+          type: string
+          example: "8"
+        amount2:
+          type: string
+          example: "1"
+        category:
+          type: string
+          example: "waves"
+        spellUnit2Id:
+          type: string
+          example: giant_quadrapus_unit_id
+        iconPath:
+          type: string
+          example: Icons/Quadrapus.png
+        levelNum:
+          type: string
+          example: "15"
+        prepareTime:
+          title: Time in seconds before the wave starts
+          type: string
+          example: "38"
+        totalReward:
+          title: Total gold bounty for defeating all units in the wave
+          type: string
+          example: "204"
+      example:
+        totalReward: "204"
+        amount: "8"
+        amount2: "1"
+        level: "15"
+        prepareTime: "38"
+        category: "waves"
+        name: Quadrapuses
+        unitId: octopus_unit_id
+        _id: level16_wave_id
+        iconPath: Icons/Quadrapus.png
+        spellUnit2Id: giant_quadrapus_unit_id
+    Spell:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        _id:
+          type: string
+          example: dark_ritual_powerup_id
+        name:
+          type: string
+          example: Dark Ritual
+        category:
+          type: string
+          example: spells
+        tooltip:
+          type: string
+          example: "Damages your king by 20% of current health, and +135 gold"
+        iconPath:
+          type: string
+          example: Icons/DarkRitual.png
+        enabled:
+          type: boolean
+          example: true
+      example:
+        name: Dark Ritual
+        tooltip: "Damages your king by 20% of current health, and +135 gold"
+        _id: dark_ritual_powerup_id
+        iconPath: Icons/DarkRitual.png
+        category: "spells"
+        enabled: true
+    Ability:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        _id:
+          type: string
+          example: pulverize_melee_ability_id
+        name:
+          type: string
+          example: Pulverize
+        aoeRange:
+          type: integer
+        tooltip:
+          type: string
+          example:
+            This unit is a Pulverizer. It has a 34% (17% for ranged) chance
+            to stun its target for 2 second (0.3 to bosses)
+        duration:
+          type: string
+          example: "2"
+        iconPath:
+          type: string
+          example: Icons/Pulverize.png
+        category:
+          type: string
+          example: abilities
+        description:
+          type: string
+          example:
+            This unit is a Pulverizer. It has a $1% ($2% for ranged) chance
+            to stun its target for $3 second ($4 to bosses)
+        bounces:
+          type: string
+          example: "0"
+        baseDamage:
+          type: string
+        cooldown:
+          type: string
+        descriptionId:
+          type: string
+          example: pulverize_description
+      example:
+        duration: "2.00000"
+        descriptionId: pulverize_description
+        aoeRange: "0"
+        name: Pulverize
+        category: abilities
+        tooltip:
+          This unit is a Pulverizer. It has a 34% (17% for ranged) chance to
+          stun its target for 2 second (0.3 to bosses)
+        description:
+          This unit is a Pulverizer. It has a $1% ($2% for ranged) chance
+          to stun its target for $3 second ($4 to bosses)
+        _id: pulverize_melee_ability_id
+        bounces: "0"
+        iconPath: Icons/Pulverize.png
+    Research:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        _id:
+          type: string
+          example: king_regen_research_id
+        name:
+          type: string
+          example: Upgrade King Regen
+        category:
+          type: string
+          example: researches
+        legionId:
+          type: string
+          example: aspect_legion_id
+        levels:
+          type: string
+          example: "10"
+        tooltip:
+          type: string
+          example:
+            Increases the King's health regen by 0.004% missing health + 0.004%
+            max health
+        goldCost:
+          type: string
+          example: "0"
+        iconPath:
+          type: string
+          example: Icons/UpgradeKingRegen.png
+        description:
+          type: string
+          example:
+            Increases the King's health regen by $1% missing health + $2% max
+            health
+        mythiumCost:
+          type: string
+          example: "20"
+        descriptionId:
+          type: string
+          example: king_regen_research_id_description
+        goldCostPerLevel:
+          type: string
+        mythiumCostPerLevel:
+          type: string
+      example:
+        goldCostPerLevel: "0"
+        descriptionId: king_regen_research_id_description
+        goldCost: "0"
+        legionId: aspect_legion_id
+        mythiumCost: "20"
+        mythiumCostPerLevel: "6"
+        name: Upgrade King Regen
+        category: researches
+        tooltip:
+          Increases the King's health regen by 0.004% missing health + 0.004%
+          max health
+        description:
+          Increases the King's health regen by $1% missing health + $2%
+          max health
+        _id: king_regen_research_id
+        iconPath: Icons/UpgradeKingRegen.png
+        levels: "10"
+    Description:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        _id:
+          type: string
+          example: pulverize_description
+        name:
+          type: string
+          example: pulverize
+        description:
+          type: string
+          example:
+            This unit is a Pulverizer. It has a $1% ($2% for ranged) chance to stun its target for $3 seconds ($4 to bosses)
+        category:
+          type: string
+          example: Ability
+      example:
+        name: pulverize
+        description:
+          This unit is a Pulverizer. It has a $1% ($2% for ranged) chance to stun its target for $3 seconds ($4 to bosses)
+        _id: pulverize_description
+        category: Ability
+    Match:
+      required:
+        - id
+        - version
+      type: object
+      properties:
+        _id:
+          type: string
+          example: d5e6f0c07de940a816149ee711ac8a0cbe7cfe6675fe4419ab4ba92f0548eec0
+        version:
+          type: string
+          example: v9.01.2
+        date:
+          type: string
+          example: "2022-03-03T15:09:00.000Z"
+          title: Date timestamp in UTC
+        queueType:
+          type: string
+        endingWave:
+          title: The wave that the match ended on
+          type: integer
+          example: 9
+        gameElo:
+          title: Average elo of all players in this match
+          type: integer
+          example: 1560
+        playerCount:
+          title: How many total players participated in this match
+          type: integer
+          example: 8
+        humanCount:
+          title: How many of the players were humans
+          type: integer
+          example: 8
+        leftKingPercentHp:
+          type: array
+          example:
+            - 1
+            - 0.495
+            - 0.47
+            - 0.48
+            - 0.505
+            - 0.235
+            - 0.28
+            - 0.35
+            - 0
+          items:
+            type: number
+        rightKingPercentHp:
+          type: array
+          example:
+            - 1
+            - 0.835
+            - 0.84
+            - 0.85
+            - 0.875
+            - 0.565
+            - 0.61
+            - 0.535
+            - 0.58962977
+          items:
+            type: number
+        gameLength:
+          title: Game duration in seconds
+          type: integer
+          example: 1498
+        spellChoices:
+          title: Available legion spells
+          type: array
+          example:
+            - savior_powerup_id
+            - investment_powerup_id
+            - titan_powerup_id
+          items:
+            type: string
+        kingSpell:
+          title: Ability id of the king ability
+          type: string
+          example: judgment_ability_id
+        playersData:
+          title: Includes player specific information for every player in the match
+          type: array
+          items:
+            $ref: "#/components/schemas/PlayerMatchdetails"
+      example:
+        _id: "d5e6f0c07de940a816149ee711ac8a0cbe7cfe6675fe4419ab4ba92f0548eec0"
+        version: "v9.01.2"
+        date: "2022-03-02T14:17:00.000Z"
+        queueType: "Classic"
+        endingWave: 21
+        gameLength: 2076
+        gameElo: 1489
+        playerCount: 8
+        humanCount: 8
+        spellChoices:
+          - "villain_powerup_id"
+          - "giant_snail_powerup_id"
+          - "press_the_attack_powerup_id"
+        leftKingPercentHp:
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+        rightKingPercentHp:
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 1
+          - 0.97
+          - 1
+          - 1
+          - 1
+          - 0
+        kingSpell: "judgment_ability_id"
+        playersData:
+          playerId: "9A9E6DD4E91D5F41"
+          playerName: "Jules"
+          playerSlot: 1
+          legion: "CashOut"
+          workers: 95
+          value: 11975
+          cross: false
+          gameResult: "won"
+          classicElo: 3361
+          overallElo: 2338
+          fighters: "Aqua Spirit,Mudman,Golem,Golem,Golem,Golem,Golem,Eggsack,APS,APS,Doomsday Machine,Doomsday Machine,Doomsday Machine,Doomsday Machine,Hydra,Hydra,MPS,Doomsday Machine,Doomsday Machine,APS,Golden Buckler,Fire Elemental,Hydra,Doomsday Machine,Golden Buckler,Doomsday Machine,Oathbreaker,Royal Guard,MPS,Rogue Wave,Rogue Wave,Fire Elemental,Royal Guard,Fire Elemental"
+          mercenaries: "Snail,Dragon Turtle,Snail,Dragon Turtle,Dragon Turtle,Snail,Dragon Turtle,Snail,Dragon Turtle,Cannoneer,Dragon Turtle,Dino,Dino,Snail,Dino,Drake,Drake,Lizard,Drake,Drake,Drake,Drake,Fiend,Drake,Drake,Dragon Turtle,Drake,Drake,Drake,Drake,Drake,Drake,Drake,Cannoneer,Lizard,Lizard,Snail,Snail,Drake,Drake,Drake,Drake,Drake,Fiend,Drake,Drake,Drake,Drake,Drake,Drake,Drake,Drake,Kraken,Kraken,Kraken,Kraken,Shaman,Witch,Lizard,Lizard"
+          stayedUntilEnd: true
+          chosenSpell: "Villain"
+          chosenSpellLocation: "4|6"
+          partySize: 3
+          firstWaveFighters: "Fire Elemental"
+          rolls: "chained_fist_unit_id, golden_buckler_unit_id, aqua_spirit_unit_id, aps_unit_id, eggsack_unit_id, millennium_unit_id"
+          legionSpecificElo: 2600
+          partyMembers: 
+            - "Jules"
+            - "Lisk"
+            - "EpvpDani"
+          partyMembersIds: 
+            - "9A9E6DD4E91D5F41"
+            - "DCCE8539810097B0"
+            - "BBAE0B45BB3E9AB2"
+          mvpScore: 25615
+          netWorthPerWave:
+            - 462
+            - 564
+            - 690
+            - 822
+            - 1022
+            - 1258
+            - 1520
+            - 1852
+            - 2185
+            - 2600
+            - 3104
+            - 3723
+            - 4421
+            - 5230
+            - 6179
+            - 7447
+            - 9050
+            - 10874
+            - 12795
+            - 14983
+            - 16959
+          workersPerWave:
+            - 5
+            - 7
+            - 7
+            - 8
+            - 8
+            - 11
+            - 13
+            - 16
+            - 16
+            - 19
+            - 25
+            - 31
+            - 31
+            - 31
+            - 31
+            - 81
+            - 95
+            - 95
+            - 95
+            - 95
+            - 95
+          incomePerWave:
+            - 6
+            - 18
+            - 36
+            - 60
+            - 84
+            - 102
+            - 132
+            - 168
+            - 216
+            - 252
+            - 318
+            - 396
+            - 468
+            - 558
+            - 642
+            - 858
+            - 1158
+            - 1446
+            - 1446
+            - 1888
+            - 2000
+          mercenariesSentPerWave:
+            - [Snail"]
+            - []
+            - [Dragon Turtle",Snail"]
+            - [Dragon Turtle"]
+            - [Dragon Turtle",Snail"]
+            - [Dragon Turtle",Snail"]
+            - [Dragon Turtle"]
+            - [Cannoneer",Dragon Turtle"]
+            - [Dino"]
+            - [Dino",Snail"]
+            - [Dino"]
+            - [Drake"]
+            - [Drake",Lizard"]
+            - [Drake",Drake"]
+            - [Drake",Drake",Fiend"]
+            - [Drake",Drake",Dragon Turtle"]
+            - [Drake",Drake",Drake",Drake",Drake",Cannoneer",Snail",Drake",Drake",Lizard",Lizard",Snail"]
+            - [Drake",Drake",Drake",Drake",Drake",Fiend"]
+            - [Drake",Drake",Drake",Drake",Drake",Drake",Drake",Drake"]
+            - []
+            - [Shaman",Kraken",Kraken",Kraken",Witch",Lizard",Lizard",Kraken"]
+          mercenariesReceivedPerWave:
+            - ["Snail"]
+            - []
+            - []
+            - ["Dragon Turtle"]
+            - []
+            - ["Hermit"]
+            - ["Cannoneer"]
+            - ["Hermit"]
+            - ["Cannoneer",Hermit"]
+            - ["Dino","Snail","Snail","Snail"]
+            - ["Fiend"]
+            - ["Drake","Fiend"]
+            - ["Safety Mole","Hermit"]
+            - ["Drake"]
+            - ["Pack Leader","Cannoneer","Hermit","Snail"]
+            - ["Drake","Drake"]
+            - ["Pack Leader","Safety Mole","Safety Mole","Cannoneer","Hermit","Hermit","Dino","Snail","Snail"]
+            - ["Pack Leader","Safety Mole","Drake","Drake","Drake","Drake","Hermit","Snail"]
+            - ["Drake","Drake","Drake","Drake","Dino"]
+            - []
+            - ["Kraken","Kraken","Witch","Witch","Witch","Witch","Witch","Witch","Pack Leader","Safety Mole","Hermit","Hermit"]
+          leaksPerWave:
+            - []
+            - []
+            - []
+            - ["Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken"]
+            - []
+            - []
+            - ["Cannoneer"]
+            - []
+            - ["Carapace","Carapace","Carapace","Carapace","Carapace","Carapace","Cannoneer"]
+            - ["Granddaddy"]
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - ["Metal Dragon","Metal Dragon","Metal Dragon","Metal Dragon"]
+            - ["Wale Chief","Wale Chief","Drake"]
+            - []
+            - []
+            - []
+          buildPerWave:
+            - ["fire_elemental_unit_id:0.5|6"]
+            - ["fire_elemental_unit_id:0.5|6"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","golden_buckler_unit_id:8.5|5"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","aqua_spirit_unit_id:0.5|5","aqua_spirit_unit_id:1.5|4.5"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","aqua_spirit_unit_id:1.5|4.5"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","aqua_spirit_unit_id:1.5|4.5","aps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","aqua_spirit_unit_id:1.5|4.5","aps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7","millennium_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","aps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7","millennium_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7","millennium_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","millennium_unit_id:2.5|6","eggsack_unit_id:1.5|7.5","aqua_spirit_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","chained_fist_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","eggsack_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7"]
+            - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","chained_fist_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7"]
+            - ["fire_elemental_unit_id:0.5|6","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","chained_fist_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7","doomsday_machine_unit_id:3.5|6.5"]
+            - ["fire_elemental_unit_id:0.5|6","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","oathbreaker_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7","doomsday_machine_unit_id:3.5|6.5","doomsday_machine_unit_id:3.5|7.5","mps_unit_id:4.5|7","eggsack_unit_id:0.5|8"]
+            - ["fire_elemental_unit_id:0.5|6","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","oathbreaker_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7","doomsday_machine_unit_id:3.5|6.5","doomsday_machine_unit_id:3.5|7.5","mps_unit_id:4.5|7","hydra_unit_id:0.5|8","eggsack_unit_id:3.5|5.5","doomsday_machine_unit_id:4.5|6","doomsday_machine_unit_id:5.5|6.5"]
+            - ["fire_elemental_unit_id:0.5|6","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","oathbreaker_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7","doomsday_machine_unit_id:3.5|6.5","doomsday_machine_unit_id:3.5|7.5","mps_unit_id:4.5|7","hydra_unit_id:0.5|8","eggsack_unit_id:3.5|5.5","doomsday_machine_unit_id:4.5|6","doomsday_machine_unit_id:5.5|6.5","doomsday_machine_unit_id:5.5|7.5","doomsday_machine_unit_id:4.5|8","aps_unit_id:5.5|5.5","aps_unit_id:5.5|8.5","eggsack_unit_id:1.5|8.5"]
+            - ["fire_elemental_unit_id:0.5|6","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","oathbreaker_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7","doomsday_machine_unit_id:3.5|6.5","doomsday_machine_unit_id:3.5|7.5","mps_unit_id:4.5|7","hydra_unit_id:0.5|8","hydra_unit_id:3.5|5.5","doomsday_machine_unit_id:4.5|6","doomsday_machine_unit_id:5.5|6.5","doomsday_machine_unit_id:5.5|7.5","doomsday_machine_unit_id:4.5|8","aps_unit_id:5.5|5.5","aps_unit_id:5.5|8.5","eggsack_unit_id:1.5|8.5","golem_unit_id:2.5|9","golem_unit_id:0.5|9","golem_unit_id:8.5|8","golem_unit_id:3.5|8.5","golem_unit_id:7.5|8.5","mudman_unit_id:6.5|8","aqua_spirit_unit_id:4.5|5"]
+          leakValue: 349,
+          leaksCaughtValue: 1266,
+          leftAtSeconds: -1,
+          kingUpgradesPerWave:
+            - []
+            - []
+            - []
+            - ["Upgrade King Attack"]
+            - ["Upgrade King Spell"]
+            - ["Upgrade King Spell"]
+            - []
+            - []
+            - ["Upgrade King Spell","Upgrade King Spell","Upgrade King Spell"]
+            - ["Upgrade King Attack","Upgrade King Attack"]
+            - ["Upgrade King Spell","Upgrade King Spell","Upgrade King Attack","Upgrade King Attack","Upgrade King Attack"]
+            - ["Upgrade King Regen","Upgrade King Regen","Upgrade King Regen","Upgrade King Regen","Upgrade King Regen"]
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+          opponentKingUpgradesPerWave:
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - ["Upgrade King Regen","Upgrade King Regen","Upgrade King Regen"]
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+            - []
+    PlayerMatchdetails:
+      type: object
+      properties:
+        playerId:
+          type: string
+        playerName:
+          type: string
+        playerSlot:
+          type: integer
+        legion:
+          type: string
+        workers:
+          type: integer
+        value:
+          type: integer
+        cross:
+          type: boolean
+        gameResult:
+          type: string
+        overallElo:
+          type: integer
+        classicElo:
+          type: integer
+        fighters:
+          type: string
+        mercenaries:
+          type: string
+        stayedUntilEnd:
+          type: boolean
+        chosenSpell:
+          type: string
+        chosenSpellLocation:
+          type: string
+        partySize:
+          type: integer
+        firstWaveFighters:
+          type: string
+        rolls:
+          type: string
+        eco:
+          title:
+            Describes if this player went full eco at some point (pushing only workers without increasing their value to get maximum sends)
+          type: boolean
+        legionSpecificElo:
+          type: integer
+        partyMembers:
+          type: array
+          items:
+            type: string
+        partyMembersId:
+          type: array
+          items:
+            type: string
+        mvpScore:
+          type: integer
+          deprecated: true
+        netWorthPerWave:
+          type: array
+          items:
+            type: integer
+        workersPerWave:
+          type: array
+          items:
+            type: integer
+        incomePerWave:
+          type: array
+          items:
+            type: integer
+        mercenariesSentPerWave:
+          type: array
+          items:
+            type: string
+        mercenariesReceivedPerWave:
+          type: array
+          items:
+            type: string
+        leaksPerWave:
+          type: array
+          items:
+            type: string
+        buildPerWave:
+          type: array
+          items:
+            type: string
+        leakValue:
+          type: integer
+        leaksCaughtValue:
+          type: integer
+        leftAtSeconds:
+          type: integer
+        kingUpgradesPerWave:
+          type: array
+          items:
+            type: string
+        receivedKingUpgradesPerWave:
+          type: array
+          items:
+            type: string
+      example:
+        playerId: "9A9E6DD4E91D5F41"
+        playerName: "Jules"
+        playerSlot: 1
+        legion: "CashOut"
+        workers: 95
+        value: 11975
+        cross: false
+        gameResult: "won"
+        classicElo: 3361
+        overallElo: 2338
+        fighters: "Aqua Spirit,Mudman,Golem,Golem,Golem,Golem,Golem,Eggsack,APS,APS,Doomsday Machine,Doomsday Machine,Doomsday Machine,Doomsday Machine,Hydra,Hydra,MPS,Doomsday Machine,Doomsday Machine,APS,Golden Buckler,Fire Elemental,Hydra,Doomsday Machine,Golden Buckler,Doomsday Machine,Oathbreaker,Royal Guard,MPS,Rogue Wave,Rogue Wave,Fire Elemental,Royal Guard,Fire Elemental"
+        mercenaries: "Snail,Dragon Turtle,Snail,Dragon Turtle,Dragon Turtle,Snail,Dragon Turtle,Snail,Dragon Turtle,Cannoneer,Dragon Turtle,Dino,Dino,Snail,Dino,Drake,Drake,Lizard,Drake,Drake,Drake,Drake,Fiend,Drake,Drake,Dragon Turtle,Drake,Drake,Drake,Drake,Drake,Drake,Drake,Cannoneer,Lizard,Lizard,Snail,Snail,Drake,Drake,Drake,Drake,Drake,Fiend,Drake,Drake,Drake,Drake,Drake,Drake,Drake,Drake,Kraken,Kraken,Kraken,Kraken,Shaman,Witch,Lizard,Lizard"
+        stayedUntilEnd: true
+        chosenSpell: "Villain"
+        chosenSpellLocation: "4|6"
+        partySize: 3
+        firstWaveFighters: "Fire Elemental"
+        rolls: "chained_fist_unit_id, golden_buckler_unit_id, aqua_spirit_unit_id, aps_unit_id, eggsack_unit_id, millennium_unit_id"
+        eco: false
+        legionSpecificElo: 2600
+        partyMembers: 
+          - "Jules"
+          - "Lisk"
+          - "EpvpDani"
+        partyMembersIds: 
+          - "9A9E6DD4E91D5F41"
+          - "DCCE8539810097B0"
+          - "BBAE0B45BB3E9AB2"
+        mvpScore: 25615
+        netWorthPerWave:
+          - 462
+          - 564
+          - 690
+          - 822
+          - 1022
+          - 1258
+          - 1520
+          - 1852
+          - 2185
+          - 2600
+          - 3104
+          - 3723
+          - 4421
+          - 5230
+          - 6179
+          - 7447
+          - 9050
+          - 10874
+          - 12795
+          - 14983
+          - 16959
+        workersPerWave:
+          - 5
+          - 7
+          - 7
+          - 8
+          - 8
+          - 11
+          - 13
+          - 16
+          - 16
+          - 19
+          - 25
+          - 31
+          - 31
+          - 31
+          - 31
+          - 81
+          - 95
+          - 95
+          - 95
+          - 95
+          - 95
+        incomePerWave:
+          - 6
+          - 18
+          - 36
+          - 60
+          - 84
+          - 102
+          - 132
+          - 168
+          - 216
+          - 252
+          - 318
+          - 396
+          - 468
+          - 558
+          - 642
+          - 858
+          - 1158
+          - 1446
+          - 1446
+          - 1888
+          - 2000
+        mercenariesSentPerWave:
+          - [Snail"]
+          - []
+          - [Dragon Turtle",Snail"]
+          - [Dragon Turtle"]
+          - [Dragon Turtle",Snail"]
+          - [Dragon Turtle",Snail"]
+          - [Dragon Turtle"]
+          - [Cannoneer",Dragon Turtle"]
+          - [Dino"]
+          - [Dino",Snail"]
+          - [Dino"]
+          - [Drake"]
+          - [Drake",Lizard"]
+          - [Drake",Drake"]
+          - [Drake",Drake",Fiend"]
+          - [Drake",Drake",Dragon Turtle"]
+          - [Drake",Drake",Drake",Drake",Drake",Cannoneer",Snail",Drake",Drake",Lizard",Lizard",Snail"]
+          - [Drake",Drake",Drake",Drake",Drake",Fiend"]
+          - [Drake",Drake",Drake",Drake",Drake",Drake",Drake",Drake"]
+          - []
+          - [Shaman",Kraken",Kraken",Kraken",Witch",Lizard",Lizard",Kraken"]
+        mercenariesReceivedPerWave:
+          - ["Snail"]
+          - []
+          - []
+          - ["Dragon Turtle"]
+          - []
+          - ["Hermit"]
+          - ["Cannoneer"]
+          - ["Hermit"]
+          - ["Cannoneer",Hermit"]
+          - ["Dino","Snail","Snail","Snail"]
+          - ["Fiend"]
+          - ["Drake","Fiend"]
+          - ["Safety Mole","Hermit"]
+          - ["Drake"]
+          - ["Pack Leader","Cannoneer","Hermit","Snail"]
+          - ["Drake","Drake"]
+          - ["Pack Leader","Safety Mole","Safety Mole","Cannoneer","Hermit","Hermit","Dino","Snail","Snail"]
+          - ["Pack Leader","Safety Mole","Drake","Drake","Drake","Drake","Hermit","Snail"]
+          - ["Drake","Drake","Drake","Drake","Dino"]
+          - []
+          - ["Kraken","Kraken","Witch","Witch","Witch","Witch","Witch","Witch","Pack Leader","Safety Mole","Hermit","Hermit"]
+        leaksPerWave:
+          - []
+          - []
+          - []
+          - ["Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken","Flying Chicken"]
+          - []
+          - []
+          - ["Cannoneer"]
+          - []
+          - ["Carapace","Carapace","Carapace","Carapace","Carapace","Carapace","Cannoneer"]
+          - ["Granddaddy"]
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - ["Metal Dragon","Metal Dragon","Metal Dragon","Metal Dragon"]
+          - ["Wale Chief","Wale Chief","Drake"]
+          - []
+          - []
+          - []
+        buildPerWave:
+          - ["fire_elemental_unit_id:0.5|6"]
+          - ["fire_elemental_unit_id:0.5|6"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","golden_buckler_unit_id:8.5|5"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","aqua_spirit_unit_id:0.5|5","aqua_spirit_unit_id:1.5|4.5"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","aqua_spirit_unit_id:1.5|4.5"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","aqua_spirit_unit_id:1.5|4.5","aps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","aqua_spirit_unit_id:1.5|4.5","aps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7","millennium_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","aps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7","millennium_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7","millennium_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","chained_fist_unit_id:7.5|3.5","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","golden_buckler_unit_id:0.5|7","chained_fist_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","millennium_unit_id:2.5|6","eggsack_unit_id:1.5|7.5","aqua_spirit_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","chained_fist_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","eggsack_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7"]
+          - ["fire_elemental_unit_id:0.5|6","chained_fist_unit_id:8.5|4","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","chained_fist_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7"]
+          - ["fire_elemental_unit_id:0.5|6","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","chained_fist_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7","doomsday_machine_unit_id:3.5|6.5"]
+          - ["fire_elemental_unit_id:0.5|6","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","oathbreaker_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7","doomsday_machine_unit_id:3.5|6.5","doomsday_machine_unit_id:3.5|7.5","mps_unit_id:4.5|7","eggsack_unit_id:0.5|8"]
+          - ["fire_elemental_unit_id:0.5|6","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","oathbreaker_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7","doomsday_machine_unit_id:3.5|6.5","doomsday_machine_unit_id:3.5|7.5","mps_unit_id:4.5|7","hydra_unit_id:0.5|8","eggsack_unit_id:3.5|5.5","doomsday_machine_unit_id:4.5|6","doomsday_machine_unit_id:5.5|6.5"]
+          - ["fire_elemental_unit_id:0.5|6","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","oathbreaker_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7","doomsday_machine_unit_id:3.5|6.5","doomsday_machine_unit_id:3.5|7.5","mps_unit_id:4.5|7","hydra_unit_id:0.5|8","eggsack_unit_id:3.5|5.5","doomsday_machine_unit_id:4.5|6","doomsday_machine_unit_id:5.5|6.5","doomsday_machine_unit_id:5.5|7.5","doomsday_machine_unit_id:4.5|8","aps_unit_id:5.5|5.5","aps_unit_id:5.5|8.5","eggsack_unit_id:1.5|8.5"]
+          - ["fire_elemental_unit_id:0.5|6","royal_guard_unit_id:8.5|5","fire_elemental_unit_id:2.5|5","rogue_wave_unit_id:0.5|5","rogue_wave_unit_id:1.5|4.5","mps_unit_id:1.5|5.5","royal_guard_unit_id:0.5|7","oathbreaker_unit_id:8.5|7","doomsday_machine_unit_id:1.5|6.5","golden_buckler_unit_id:7.5|6.5","doomsday_machine_unit_id:2.5|6","hydra_unit_id:1.5|7.5","fire_elemental_unit_id:2.5|8","golden_buckler_unit_id:7.5|7.5","aps_unit_id:2.5|7","doomsday_machine_unit_id:3.5|6.5","doomsday_machine_unit_id:3.5|7.5","mps_unit_id:4.5|7","hydra_unit_id:0.5|8","hydra_unit_id:3.5|5.5","doomsday_machine_unit_id:4.5|6","doomsday_machine_unit_id:5.5|6.5","doomsday_machine_unit_id:5.5|7.5","doomsday_machine_unit_id:4.5|8","aps_unit_id:5.5|5.5","aps_unit_id:5.5|8.5","eggsack_unit_id:1.5|8.5","golem_unit_id:2.5|9","golem_unit_id:0.5|9","golem_unit_id:8.5|8","golem_unit_id:3.5|8.5","golem_unit_id:7.5|8.5","mudman_unit_id:6.5|8","aqua_spirit_unit_id:4.5|5"]
+        leakValue: 349,
+        leaksCaughtValue: 1266,
+        leftAtSeconds: -1,
+        kingUpgradesPerWave:
+          - []
+          - []
+          - []
+          - ["Upgrade King Attack"]
+          - ["Upgrade King Spell"]
+          - ["Upgrade King Spell"]
+          - []
+          - []
+          - ["Upgrade King Spell","Upgrade King Spell","Upgrade King Spell"]
+          - ["Upgrade King Attack","Upgrade King Attack"]
+          - ["Upgrade King Spell","Upgrade King Spell","Upgrade King Attack","Upgrade King Attack","Upgrade King Attack"]
+          - ["Upgrade King Regen","Upgrade King Regen","Upgrade King Regen","Upgrade King Regen","Upgrade King Regen"]
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+        opponentKingUpgradesPerWave:
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - ["Upgrade King Regen","Upgrade King Regen","Upgrade King Regen"]
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+          - []
+    QueueType:
+      type: string
+      enum:
+        - Normal
+        - Classic
+        - Arcade
+        - Coop
+        - Custom
+    PlayerFriends:
+      type: object
+      properties:
+        _id:
+          type: object
+          properties:
+            playerId: 
+              type: string
+            playerName:
+              type: string
+        count:
+          type: integer
+          example: 42
+      example:
+        _id:
+          playerId: "DCCE8539810097B0"
+          playerName: Lisk
+        count: 42
+    Stats:
+      type: object
+      description: "Note: Existing fields should not change but there might always be new fields added to this object"
+      properties:
+        _id:
+          type: string
+        secondsPlayed: 
+          type: integer
+        gamesPlayed: 
+          type: integer
+        totalXp:
+          type: integer
+        ...:
+          type: string
+      example:
+        _id: "5D6B05FA2AE0D34B"
+        secondsPlayed: 12415187
+        gamesPlayed: 575
+        totalXp: 833228
+        ...: "..."
+  securitySchemes:
+    api_key:
+      type: "apiKey"
+      name: "x-api-key"
+      in: "header"

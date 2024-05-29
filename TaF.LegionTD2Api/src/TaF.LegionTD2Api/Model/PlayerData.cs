@@ -18,7 +18,7 @@ namespace TaF.LegionTD2Api.Model;
         public string Legion { get; set; }
 
         [JsonProperty("workers")]
-        public int? Workers { get; set; }
+        public double? Workers { get; set; }
 
         [JsonProperty("value")]
         public int? Value { get; set; }
@@ -84,7 +84,7 @@ namespace TaF.LegionTD2Api.Model;
         public List<int?> ValuePerWave { get; set; }
 
         [JsonProperty("workersPerWave")]
-        public List<int?> WorkersPerWave { get; set; }
+        public List<double?> WorkersPerWave { get; set; }
 
         [JsonProperty("incomePerWave")]
         public List<int?> IncomePerWave { get; set; }
@@ -108,7 +108,7 @@ namespace TaF.LegionTD2Api.Model;
         public int? LeaksCaughtValue { get; set; }
 
         [JsonProperty("leftAtSeconds")]
-        public int? LeftAtSeconds { get; set; }
+        public double? LeftAtSeconds { get; set; }
 
         [JsonProperty("kingUpgradesPerWave")]
         public List<List<string>> KingUpgradesPerWave { get; set; }

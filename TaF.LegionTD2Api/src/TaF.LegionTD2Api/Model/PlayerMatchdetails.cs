@@ -69,10 +69,10 @@ namespace TaF.LegionTD2Api.Model
             string chosenSpellLocation = default, int partySize = default, string firstWaveFighters = default,
             string rolls = default, bool eco = default, int legionSpecificElo = default,
             List<string> partyMembers = default, List<string> partyMembersId = default, int mvpScore = default,
-            List<int> netWorthPerWave = default, List<int> workersPerWave = default, List<int> incomePerWave = default,
+            List<int> netWorthPerWave = default, List<double> workersPerWave = default, List<int> incomePerWave = default,
             List<string> mercenariesSentPerWave = default, List<string> mercenariesReceivedPerWave = default,
             List<string> leaksPerWave = default, List<string> buildPerWave = default, int leakValue = default,
-            int leaksCaughtValue = default, int leftAtSeconds = default, List<string> kingUpgradesPerWave = default,
+            int leaksCaughtValue = default, double leftAtSeconds = default, List<string> kingUpgradesPerWave = default,
             List<string> receivedKingUpgradesPerWave = default)
         {
             PlayerId = playerId;
@@ -261,7 +261,7 @@ namespace TaF.LegionTD2Api.Model
         ///     Gets or Sets WorkersPerWave
         /// </summary>
         [DataMember(Name = "workersPerWave", EmitDefaultValue = false)]
-        public List<int> WorkersPerWave { get; set; }
+        public List<double> WorkersPerWave { get; set; }
 
         /// <summary>
         ///     Gets or Sets IncomePerWave
@@ -309,7 +309,7 @@ namespace TaF.LegionTD2Api.Model
         ///     Gets or Sets LeftAtSeconds
         /// </summary>
         [DataMember(Name = "leftAtSeconds", EmitDefaultValue = false)]
-        public int LeftAtSeconds { get; set; }
+        public double LeftAtSeconds { get; set; }
 
         /// <summary>
         ///     Gets or Sets KingUpgradesPerWave

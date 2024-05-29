@@ -22,4 +22,8 @@
         </PackageReference>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\src\TaF.LegionTD2Api\TaF.LegionTD2Api.csproj" />
+    </ItemGroup>
+
 </Project>
