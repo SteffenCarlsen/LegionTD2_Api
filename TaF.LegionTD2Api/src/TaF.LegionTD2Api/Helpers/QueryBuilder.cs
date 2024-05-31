@@ -5,8 +5,8 @@ namespace TaF.LegionTD2Api.Helpers;
 
 public class QueryBuilder
 {
-    private StringBuilder _queryBuilder;
-    private Dictionary<string, string> _parameters;
+    private readonly Dictionary<string, string> _parameters;
+    private readonly StringBuilder _queryBuilder;
 
     public QueryBuilder()
     {
@@ -20,6 +20,7 @@ public class QueryBuilder
         {
             return this;
         }
+
         _parameters.Add(key, value);
         return this;
     }
@@ -30,6 +31,7 @@ public class QueryBuilder
         {
             _queryBuilder.Append("?");
         }
+
         foreach (var parameter in _parameters)
         {
             if (_queryBuilder.Length > 1)

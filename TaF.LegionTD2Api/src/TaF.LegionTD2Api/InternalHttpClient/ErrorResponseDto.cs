@@ -1,7 +1,6 @@
-﻿namespace TaF.LegionTD2Api.InternalHttpClient
+﻿namespace TaF.LegionTD2Api.InternalHttpClient;
+
+public class ErrorResponseDto
 {
-    public class ErrorResponseDto
-    {
-        public string message;
-    }
+    public string message;
 }

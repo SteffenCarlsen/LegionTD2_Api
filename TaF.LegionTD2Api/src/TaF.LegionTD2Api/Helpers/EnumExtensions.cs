@@ -12,6 +12,7 @@ public static class EnumExtensions
         {
             return attribute.Description;
         }
+
         throw new ArgumentException("Item not found.", nameof(enumValue));
     }
 }

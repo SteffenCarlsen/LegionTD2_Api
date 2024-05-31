@@ -4,78 +4,105 @@ using System.Threading.Tasks;
 using ComposableAsync;
 using RateLimiter;
 
-namespace TaF.LegionTD2Api.InternalHttpClient.RateLimiter
+namespace TaF.LegionTD2Api.InternalHttpClient.RateLimiter;
+
+public class RateLimiterSettings
 {
-    public class RateLimiterSettings
+    private readonly List<IAwaitableConstraint> timeLimiters;
+
+    public RateLimiterSettings()
     {
-        private readonly List<IAwaitableConstraint> timeLimiters;
+        timeLimiters = new List<IAwaitableConstraint>();
+    }
 
-        public RateLimiterSettings()
+    public void AddRateLimit(IAwaitableConstraint constraint)
+    {
+        if (constraint == null)
         {
-            timeLimiters = new List<IAwaitableConstraint>();
+            throw new ArgumentException("You must supply a valid constraint", nameof(constraint));
         }
 
-        public void AddRateLimit(IAwaitableConstraint constraint)
-        {
-            if (constraint == null)
-                throw new ArgumentException("You must supply a valid constraint", nameof(constraint));
+        timeLimiters.Add(constraint);
+    }
 
-            timeLimiters.Add(constraint);
+    public void AddRateLimit(int amount, TimeSpan time)
+    {
+        if (amount < 0)
+        {
+            throw new ArgumentException("You must supply a valid amount", nameof(amount));
         }
 
-        public void AddRateLimit(int amount, TimeSpan time)
+        if (time == null)
         {
-            if (amount < 0) throw new ArgumentException("You must supply a valid amount", nameof(amount));
-
-            if (time == null) throw new ArgumentException("You must supply a valid time", nameof(time));
-
-            var constraint = new CountByIntervalAwaitableConstraint(amount, time);
-            timeLimiters.Add(constraint);
+            throw new ArgumentException("You must supply a valid time", nameof(time));
         }
 
-        public void RemoveRateLimit(IAwaitableConstraint constraint)
-        {
-            if (constraint == null)
-                throw new ArgumentException("You must supply a valid constraint", nameof(constraint));
+        var constraint = new CountByIntervalAwaitableConstraint(amount, time);
+        timeLimiters.Add(constraint);
+    }
 
-            timeLimiters.Remove(constraint);
+    public void RemoveRateLimit(IAwaitableConstraint constraint)
+    {
+        if (constraint == null)
+        {
+            throw new ArgumentException("You must supply a valid constraint", nameof(constraint));
         }
 
-        public void ClearRateLimit()
+        timeLimiters.Remove(constraint);
+    }
+
+    public void ClearRateLimit()
+    {
+        timeLimiters.Clear();
+    }
+
+    public void EnableRateLimiter(InternalClient client)
+    {
+        if (client == null)
         {
-            timeLimiters.Clear();
+            throw new ArgumentException("You must supply a valid client", nameof(client));
         }
 
-        public void EnableRateLimiter(InternalClient client)
-        {
-            if (client == null) throw new ArgumentException("You must supply a valid client", nameof(client));
+        client.BeforeRequestAsync += OnBeforeRequestAsync;
+        client.ErrorRequestAsync += OnErrorRequestAsync;
+    }
 
-            client.BeforeRequestAsync += OnBeforeRequestAsync;
-            client.ErrorRequestAsync += OnErrorRequestAsync;
+    private async Task OnErrorRequestAsync(object sender, EventArgs e)
+    {
+        if (sender == null || e == null)
+        {
+            return;
         }
 
-        private async Task OnErrorRequestAsync(object sender, EventArgs e)
+        var clientRequest = e as ClientRequestErrorEventArgs;
+        if (clientRequest.StatusCode != 200)
         {
-            if (sender == null || e == null) return;
+            await TimeLimiter.Compose(timeLimiters.ToArray());
+        }
+    }
 
-            var clientRequest = e as ClientRequestErrorEventArgs;
-            if (clientRequest.StatusCode != 200) await TimeLimiter.Compose(timeLimiters.ToArray());
+    public void DisableRateLimiter(InternalClient client)
+    {
+        if (client == null)
+        {
+            throw new ArgumentException("You must supply a valid client", nameof(client));
         }
 
-        public void DisableRateLimiter(InternalClient client)
-        {
-            if (client == null) throw new ArgumentException("You must supply a valid client", nameof(client));
+        client.BeforeRequestAsync -= OnBeforeRequestAsync;
+        client.ErrorRequestAsync -= OnErrorRequestAsync;
+    }
 
-            client.BeforeRequestAsync -= OnBeforeRequestAsync;
-            client.ErrorRequestAsync -= OnErrorRequestAsync;
+    private async Task OnBeforeRequestAsync(object sender, EventArgs e)
+    {
+        if (sender == null || e == null)
+        {
+            return;
         }
 
-        private async Task OnBeforeRequestAsync(object sender, EventArgs e)
+        var clientRequest = e as ClientRequestEventArgs;
+        if (string.IsNullOrEmpty(clientRequest.ResponseContent))
         {
-            if (sender == null || e == null) return;
-
-            var clientRequest = e as ClientRequestEventArgs;
-            if (string.IsNullOrEmpty(clientRequest.ResponseContent)) await TimeLimiter.Compose(timeLimiters.ToArray());
+            await TimeLimiter.Compose(timeLimiters.ToArray());
         }
     }
 }

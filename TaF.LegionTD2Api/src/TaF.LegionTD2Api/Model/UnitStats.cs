@@ -13,388 +13,403 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace TaF.LegionTD2Api.Model
+namespace TaF.LegionTD2Api.Model;
+
+/// <summary>
+///     UnitStats
+/// </summary>
+[DataContract]
+public class UnitStats : IEquatable<UnitStats>, IValidatableObject
 {
     /// <summary>
-    ///     UnitStats
+    ///     Defines ArmorType
     /// </summary>
-    [DataContract]
-    public class UnitStats : IEquatable<UnitStats>, IValidatableObject
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum ArmorTypeEnum
     {
         /// <summary>
-        ///     Defines ArmorType
+        ///     Enum Arcane for value: Arcane
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum ArmorTypeEnum
-        {
-            /// <summary>
-            ///     Enum Arcane for value: Arcane
-            /// </summary>
-            [EnumMember(Value = "Arcane")] Arcane = 1,
-
-            /// <summary>
-            ///     Enum Fortified for value: Fortified
-            /// </summary>
-            [EnumMember(Value = "Fortified")] Fortified = 2,
-
-            /// <summary>
-            ///     Enum Immaterial for value: Immaterial
-            /// </summary>
-            [EnumMember(Value = "Immaterial")] Immaterial = 3,
-
-            /// <summary>
-            ///     Enum Natural for value: Natural
-            /// </summary>
-            [EnumMember(Value = "Natural")] Natural = 4,
-
-            /// <summary>
-            ///     Enum Swift for value: Swift
-            /// </summary>
-            [EnumMember(Value = "Swift")] Swift = 5
-        }
+        [EnumMember(Value = "Arcane")] Arcane = 1,
 
         /// <summary>
-        ///     Note: Siege is no longer used
+        ///     Enum Fortified for value: Fortified
         /// </summary>
-        /// <value>Note: Siege is no longer used</value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum AttackTypeEnum
-        {
-            /// <summary>
-            ///     Enum Impact for value: Impact
-            /// </summary>
-            [EnumMember(Value = "Impact")] Impact = 1,
-
-            /// <summary>
-            ///     Enum Magic for value: Magic
-            /// </summary>
-            [EnumMember(Value = "Magic")] Magic = 2,
-
-            /// <summary>
-            ///     Enum Pierce for value: Pierce
-            /// </summary>
-            [EnumMember(Value = "Pierce")] Pierce = 3,
-
-            /// <summary>
-            ///     Enum Pure for value: Pure
-            /// </summary>
-            [EnumMember(Value = "Pure")] Pure = 4,
-
-            /// <summary>
-            ///     Enum Siege for value: Siege
-            /// </summary>
-            [EnumMember(Value = "Siege")] Siege = 5
-        }
+        [EnumMember(Value = "Fortified")] Fortified = 2,
 
         /// <summary>
-        ///     Defines Flags
+        ///     Enum Immaterial for value: Immaterial
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum FlagsEnum
-        {
-            /// <summary>
-            ///     Enum Boss for value: Boss
-            /// </summary>
-            [EnumMember(Value = "Boss")] Boss = 1,
-
-            /// <summary>
-            ///     Enum Building for value: Building
-            /// </summary>
-            [EnumMember(Value = "Building")] Building = 2,
-
-            /// <summary>
-            ///     Enum Dead for value: Dead
-            /// </summary>
-            [EnumMember(Value = "Dead")] Dead = 3,
-
-            /// <summary>
-            ///     Enum Air for value: Air
-            /// </summary>
-            [EnumMember(Value = "Air")] Air = 4,
-
-            /// <summary>
-            ///     Enum Ground for value: Ground
-            /// </summary>
-            [EnumMember(Value = "Ground")] Ground = 5,
-
-            /// <summary>
-            ///     Enum Immune for value: Immune
-            /// </summary>
-            [EnumMember(Value = "Immune")] Immune = 6,
-
-            /// <summary>
-            ///     Enum CannotBeHealed for value: Cannot Be Healed
-            /// </summary>
-            [EnumMember(Value = "Cannot Be Healed")]
-            CannotBeHealed = 7,
-
-            /// <summary>
-            ///     Enum King for value: King
-            /// </summary>
-            [EnumMember(Value = "King")] King = 8,
-
-            /// <summary>
-            ///     Enum Mechnical for value: Mechnical
-            /// </summary>
-            [EnumMember(Value = "Mechnical")] Mechnical = 9,
-
-            /// <summary>
-            ///     Enum Organic for value: Organic
-            /// </summary>
-            [EnumMember(Value = "Organic")] Organic = 10,
-
-            /// <summary>
-            ///     Enum Summoned for value: Summoned
-            /// </summary>
-            [EnumMember(Value = "Summoned")] Summoned = 11,
-
-            /// <summary>
-            ///     Enum Undead for value: Undead
-            /// </summary>
-            [EnumMember(Value = "Undead")] Undead = 12,
-
-            /// <summary>
-            ///     Enum Unselectable for value: Unselectable
-            /// </summary>
-            [EnumMember(Value = "Unselectable")] Unselectable = 13,
-
-            /// <summary>
-            ///     Enum Invulnerable for value: Invulnerable
-            /// </summary>
-            [EnumMember(Value = "Invulnerable")] Invulnerable = 14,
-
-            /// <summary>
-            ///     Enum Harvestable for value: Harvestable
-            /// </summary>
-            [EnumMember(Value = "Harvestable")] Harvestable = 15,
-
-            /// <summary>
-            ///     Enum Ghost for value: Ghost
-            /// </summary>
-            [EnumMember(Value = "Ghost")] Ghost = 16
-        }
+        [EnumMember(Value = "Immaterial")] Immaterial = 3,
 
         /// <summary>
-        ///     Defines MoveSpeedText
+        ///     Enum Natural for value: Natural
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum MoveSpeedTextEnum
-        {
-            /// <summary>
-            ///     Enum Average for value: Average
-            /// </summary>
-            [EnumMember(Value = "Average")] Average = 1,
-
-            /// <summary>
-            ///     Enum VerySlow for value: Very Slow
-            /// </summary>
-            [EnumMember(Value = "Very Slow")] VerySlow = 2,
-
-            /// <summary>
-            ///     Enum Veryfast for value: Very fast
-            /// </summary>
-            [EnumMember(Value = "Very fast")] Veryfast = 3
-        }
+        [EnumMember(Value = "Natural")] Natural = 4,
 
         /// <summary>
-        ///     Defines MoveType
+        ///     Enum Swift for value: Swift
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum MoveTypeEnum
-        {
-            /// <summary>
-            ///     Enum Ground for value: Ground
-            /// </summary>
-            [EnumMember(Value = "Ground")] Ground = 1,
+        [EnumMember(Value = "Swift")] Swift = 5
+    }
 
-            /// <summary>
-            ///     Enum Air for value: Air
-            /// </summary>
-            [EnumMember(Value = "Air")] Air = 2,
-
-            /// <summary>
-            ///     Enum Hover for value: Hover
-            /// </summary>
-            [EnumMember(Value = "Hover")] Hover = 3,
-
-            /// <summary>
-            ///     Enum None for value: None
-            /// </summary>
-            [EnumMember(Value = "None")] None = 4
-        }
+    /// <summary>
+    ///     Note: Siege is no longer used
+    /// </summary>
+    /// <value>Note: Siege is no longer used</value>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum AttackTypeEnum
+    {
+        /// <summary>
+        ///     Enum Impact for value: Impact
+        /// </summary>
+        [EnumMember(Value = "Impact")] Impact = 1,
 
         /// <summary>
-        ///     Creatures &#x3D; Units that spawn every wave &lt;br&gt; Fighter &#x3D; Units that can be deployed by the player for
-        ///     gold &lt;br&gt; King &#x3D; Base that has to be defended &lt;br&gt; Mercenary &#x3D; Units that can be hired for
-        ///     mythium and get sent to the opponents lane &lt;br&gt; Worker &#x3D; Units that collect mythium &lt;br&gt;
+        ///     Enum Magic for value: Magic
         /// </summary>
-        /// <value>
-        ///     Creatures &#x3D; Units that spawn every wave &lt;br&gt; Fighter &#x3D; Units that can be deployed by the player
-        ///     for gold &lt;br&gt; King &#x3D; Base that has to be defended &lt;br&gt; Mercenary &#x3D; Units that can be hired
-        ///     for mythium and get sent to the opponents lane &lt;br&gt; Worker &#x3D; Units that collect mythium &lt;br&gt;
-        /// </value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum UnitClassEnum
-        {
-            /// <summary>
-            ///     Enum Creature for value: Creature
-            /// </summary>
-            [EnumMember(Value = "Creature")] Creature = 1,
-
-            /// <summary>
-            ///     Enum Fighter for value: Fighter
-            /// </summary>
-            [EnumMember(Value = "Fighter")] Fighter = 2,
-
-            /// <summary>
-            ///     Enum King for value: King
-            /// </summary>
-            [EnumMember(Value = "King")] King = 3,
-
-            /// <summary>
-            ///     Enum Mercenary for value: Mercenary
-            /// </summary>
-            [EnumMember(Value = "Mercenary")] Mercenary = 4,
-
-            /// <summary>
-            ///     Enum Worker for value: Worker
-            /// </summary>
-            [EnumMember(Value = "Worker")] Worker = 5,
-
-            /// <summary>
-            ///     Enum None for value: None
-            /// </summary>
-            [EnumMember(Value = "None")] None = 6
-        }
-
-        [DataMember(Name = "attackRange")] public string AttackRange { get; set; }
-
-        [DataMember(Name = "goldcost")] public string GoldCost { get; set; }
-
-        [DataMember(Name = "mythiumCost")] public string MythiumCost { get; set; }
-
-        [DataMember(Name = "maxDamage")] public string MaxDamage { get; set; }
-
-        [DataMember(Name = "hp")] public string Hp { get; set; }
-
-        [DataMember(Name = "flags")] public string Flags { get; set; }
-
-        [DataMember(Name = "tooltip")] public string Tooltip { get; set; }
-
-        [DataMember(Name = "armorType")] public string ArmorType { get; set; }
-
-        [DataMember(Name = "avgDmg")] public string AvgDmg { get; set; }
-
-        [DataMember(Name = "avgDmgDiff")] public string AvgDmgDiff { get; set; }
-
-        [DataMember(Name = "sortHelper")] public string SortHelper { get; set; }
-
-        [DataMember(Name = "avgCostDiff")] public string AvgCostDiff { get; set; }
-
-        [DataMember(Name = "avgMspdDiff")] public string AvgMspdDiff { get; set; }
-
-        [DataMember(Name = "isEnabled")] public bool IsEnabled { get; set; }
-
-        [DataMember(Name = "abilities")] public List<string> Abilities { get; set; }
-
-        [DataMember(Name = "avgHpDiff")] public string AvgHpDiff { get; set; }
-
-        [DataMember(Name = "descriptionId")] public string DescriptionId { get; set; }
-
-        [DataMember(Name = "attackMode")] public string AttackMode { get; set; }
-
-        [DataMember(Name = "avgHp")] public string AvgHp { get; set; }
-
-        [DataMember(Name = "incomeBonus")] public string IncomeBonus { get; set; }
-
-        [DataMember(Name = "sketchfabUrl")] public string SketchfabUrl { get; set; }
-
-        [DataMember(Name = "avgMspd")] public string AvgMspd { get; set; }
-
-        [DataMember(Name = "unitClass")] public string UnitClass { get; set; }
-
-        [DataMember(Name = "totalValue")] public string TotalValue { get; set; }
-
-        [DataMember(Name = "mp")] public string Mp { get; set; }
-
-        [DataMember(Name = "upgradesTo")] public List<string> UpgradesTo { get; set; }
-
-        [DataMember(Name = "legionId")] public string LegionId { get; set; }
-
-        [DataMember(Name = "modelScale")] public decimal ModelScale { get; set; }
-
-        [DataMember(Name = "expectedDamage")] public string ExpectedDamage { get; set; }
-
-        [DataMember(Name = "splashPath")] public string SplashPath { get; set; }
-
-        [DataMember(Name = "infoTier")] public string InfoTier { get; set; }
-
-        [DataMember(Name = "goldValue")] public string GoldValue { get; set; }
-
-        [DataMember(Name = "moveType")] public string MoveType { get; set; }
-
-        [DataMember(Name = "attackSpeedInverted")]
-        public string AttackSpeedInverted { get; set; }
-
-        [DataMember(Name = "moveSpeed")] public string MoveSpeed { get; set; }
-
-        [DataMember(Name = "goldBounty")] public string GoldBounty { get; set; }
-
-        [DataMember(Name = "attackType")] public string AttackType { get; set; }
-
-        [DataMember(Name = "upgradesFrom")] public string UpgradesFrom { get; set; }
-
-        [DataMember(Name = "attackSpeed")] public string AttackSpeed { get; set; }
-
-        [DataMember(Name = "name")] public string Name { get; set; }
-
-        [DataMember(Name = "avgAspdDiff")] public string AvgAspdDiff { get; set; }
-
-        [DataMember(Name = "baseDamage")] public string BaseDamage { get; set; }
-
-        [DataMember(Name = "iconPath")] public string IconPath { get; set; }
-
-        [DataMember(Name = "moveSpeedText")] public string MoveSpeedText { get; set; }
-
-        [DataMember(Name = "avgAspd")] public string AvgAspd { get; set; }
-
-        [DataMember(Name = "avgCost")] public string AvgCost { get; set; }
-
-        [DataMember(Name = "categoryClass")] public string CategoryClass { get; set; }
+        [EnumMember(Value = "Magic")] Magic = 2,
 
         /// <summary>
-        ///     Returns the JSON string presentation of the object
+        ///     Enum Pierce for value: Pierce
         /// </summary>
-        /// <returns>JSON string presentation of the object</returns>
-        public virtual string ToJson()
+        [EnumMember(Value = "Pierce")] Pierce = 3,
+
+        /// <summary>
+        ///     Enum Pure for value: Pure
+        /// </summary>
+        [EnumMember(Value = "Pure")] Pure = 4,
+
+        /// <summary>
+        ///     Enum Siege for value: Siege
+        /// </summary>
+        [EnumMember(Value = "Siege")] Siege = 5
+    }
+
+    /// <summary>
+    ///     Defines Flags
+    /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum FlagsEnum
+    {
+        /// <summary>
+        ///     Enum Boss for value: Boss
+        /// </summary>
+        [EnumMember(Value = "Boss")] Boss = 1,
+
+        /// <summary>
+        ///     Enum Building for value: Building
+        /// </summary>
+        [EnumMember(Value = "Building")] Building = 2,
+
+        /// <summary>
+        ///     Enum Dead for value: Dead
+        /// </summary>
+        [EnumMember(Value = "Dead")] Dead = 3,
+
+        /// <summary>
+        ///     Enum Air for value: Air
+        /// </summary>
+        [EnumMember(Value = "Air")] Air = 4,
+
+        /// <summary>
+        ///     Enum Ground for value: Ground
+        /// </summary>
+        [EnumMember(Value = "Ground")] Ground = 5,
+
+        /// <summary>
+        ///     Enum Immune for value: Immune
+        /// </summary>
+        [EnumMember(Value = "Immune")] Immune = 6,
+
+        /// <summary>
+        ///     Enum CannotBeHealed for value: Cannot Be Healed
+        /// </summary>
+        [EnumMember(Value = "Cannot Be Healed")]
+        CannotBeHealed = 7,
+
+        /// <summary>
+        ///     Enum King for value: King
+        /// </summary>
+        [EnumMember(Value = "King")] King = 8,
+
+        /// <summary>
+        ///     Enum Mechnical for value: Mechnical
+        /// </summary>
+        [EnumMember(Value = "Mechnical")] Mechnical = 9,
+
+        /// <summary>
+        ///     Enum Organic for value: Organic
+        /// </summary>
+        [EnumMember(Value = "Organic")] Organic = 10,
+
+        /// <summary>
+        ///     Enum Summoned for value: Summoned
+        /// </summary>
+        [EnumMember(Value = "Summoned")] Summoned = 11,
+
+        /// <summary>
+        ///     Enum Undead for value: Undead
+        /// </summary>
+        [EnumMember(Value = "Undead")] Undead = 12,
+
+        /// <summary>
+        ///     Enum Unselectable for value: Unselectable
+        /// </summary>
+        [EnumMember(Value = "Unselectable")] Unselectable = 13,
+
+        /// <summary>
+        ///     Enum Invulnerable for value: Invulnerable
+        /// </summary>
+        [EnumMember(Value = "Invulnerable")] Invulnerable = 14,
+
+        /// <summary>
+        ///     Enum Harvestable for value: Harvestable
+        /// </summary>
+        [EnumMember(Value = "Harvestable")] Harvestable = 15,
+
+        /// <summary>
+        ///     Enum Ghost for value: Ghost
+        /// </summary>
+        [EnumMember(Value = "Ghost")] Ghost = 16
+    }
+
+    /// <summary>
+    ///     Defines MoveSpeedText
+    /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum MoveSpeedTextEnum
+    {
+        /// <summary>
+        ///     Enum Average for value: Average
+        /// </summary>
+        [EnumMember(Value = "Average")] Average = 1,
+
+        /// <summary>
+        ///     Enum VerySlow for value: Very Slow
+        /// </summary>
+        [EnumMember(Value = "Very Slow")] VerySlow = 2,
+
+        /// <summary>
+        ///     Enum Veryfast for value: Very fast
+        /// </summary>
+        [EnumMember(Value = "Very fast")] Veryfast = 3
+    }
+
+    /// <summary>
+    ///     Defines MoveType
+    /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum MoveTypeEnum
+    {
+        /// <summary>
+        ///     Enum Ground for value: Ground
+        /// </summary>
+        [EnumMember(Value = "Ground")] Ground = 1,
+
+        /// <summary>
+        ///     Enum Air for value: Air
+        /// </summary>
+        [EnumMember(Value = "Air")] Air = 2,
+
+        /// <summary>
+        ///     Enum Hover for value: Hover
+        /// </summary>
+        [EnumMember(Value = "Hover")] Hover = 3,
+
+        /// <summary>
+        ///     Enum None for value: None
+        /// </summary>
+        [EnumMember(Value = "None")] None = 4
+    }
+
+    /// <summary>
+    ///     Creatures &#x3D; Units that spawn every wave &lt;br&gt; Fighter &#x3D; Units that can be deployed by the player for
+    ///     gold &lt;br&gt; King &#x3D; Base that has to be defended &lt;br&gt; Mercenary &#x3D; Units that can be hired for
+    ///     mythium and get sent to the opponents lane &lt;br&gt; Worker &#x3D; Units that collect mythium &lt;br&gt;
+    /// </summary>
+    /// <value>
+    ///     Creatures &#x3D; Units that spawn every wave &lt;br&gt; Fighter &#x3D; Units that can be deployed by the player
+    ///     for gold &lt;br&gt; King &#x3D; Base that has to be defended &lt;br&gt; Mercenary &#x3D; Units that can be hired
+    ///     for mythium and get sent to the opponents lane &lt;br&gt; Worker &#x3D; Units that collect mythium &lt;br&gt;
+    /// </value>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum UnitClassEnum
+    {
+        /// <summary>
+        ///     Enum Creature for value: Creature
+        /// </summary>
+        [EnumMember(Value = "Creature")] Creature = 1,
+
+        /// <summary>
+        ///     Enum Fighter for value: Fighter
+        /// </summary>
+        [EnumMember(Value = "Fighter")] Fighter = 2,
+
+        /// <summary>
+        ///     Enum King for value: King
+        /// </summary>
+        [EnumMember(Value = "King")] King = 3,
+
+        /// <summary>
+        ///     Enum Mercenary for value: Mercenary
+        /// </summary>
+        [EnumMember(Value = "Mercenary")] Mercenary = 4,
+
+        /// <summary>
+        ///     Enum Worker for value: Worker
+        /// </summary>
+        [EnumMember(Value = "Worker")] Worker = 5,
+
+        /// <summary>
+        ///     Enum None for value: None
+        /// </summary>
+        [EnumMember(Value = "None")] None = 6
+    }
+
+    [JsonProperty("_id")] public string Id { get; set; }
+
+    [JsonProperty("unitId")] public string UnitId { get; set; }
+
+    [JsonProperty("version")] public string Version { get; set; }
+
+    [JsonProperty("abilities")] public List<string> Abilities { get; set; }
+
+    [JsonProperty("armorType")] public string ArmorType { get; set; }
+
+    [JsonProperty("aspdInverted")] public string AspdInverted { get; set; }
+
+    [JsonProperty("attackMode")] public string AttackMode { get; set; }
+
+    [JsonProperty("attackRange")] public string AttackRange { get; set; }
+
+    [JsonProperty("attackSpeed")] public string AttackSpeed { get; set; }
+
+    [JsonProperty("attackType")] public string AttackType { get; set; }
+
+    [JsonProperty("avgAspd")] public string AvgAspd { get; set; }
+
+    [JsonProperty("avgAspdDiff")] public string AvgAspdDiff { get; set; }
+
+    [JsonProperty("avgCost")] public string AvgCost { get; set; }
+
+    [JsonProperty("avgCostDiff")] public string AvgCostDiff { get; set; }
+
+    [JsonProperty("avgDmg")] public string AvgDmg { get; set; }
+
+    [JsonProperty("avgDmgDiff")] public string AvgDmgDiff { get; set; }
+
+    [JsonProperty("avgHp")] public string AvgHp { get; set; }
+
+    [JsonProperty("avgHpDiff")] public string AvgHpDiff { get; set; }
+
+    [JsonProperty("avgMspd")] public string AvgMspd { get; set; }
+
+    [JsonProperty("avgMspdDiff")] public string AvgMspdDiff { get; set; }
+
+    [JsonProperty("categoryClass")] public string CategoryClass { get; set; }
+
+    [JsonProperty("description")] public string Description { get; set; }
+
+    [JsonProperty("descriptionId")] public string DescriptionId { get; set; }
+
+    [JsonProperty("dmgBase")] public string DmgBase { get; set; }
+
+    [JsonProperty("dmgExpected")] public string DmgExpected { get; set; }
+
+    [JsonProperty("dmgMax")] public string DmgMax { get; set; }
+
+    [JsonProperty("dps")] public string Dps { get; set; }
+
+    [JsonProperty("flags")] public string Flags { get; set; }
+
+    [JsonProperty("goldBounty")] public string GoldBounty { get; set; }
+
+    [JsonProperty("goldCost")] public string GoldCost { get; set; }
+
+    [JsonProperty("goldValue")] public string GoldValue { get; set; }
+
+    [JsonProperty("hp")] public string Hp { get; set; }
+
+    [JsonProperty("iconPath")] public string IconPath { get; set; }
+
+    [JsonProperty("incomeBonus")] public string IncomeBonus { get; set; }
+
+    [JsonProperty("infoSketchfab")] public string InfoSketchfab { get; set; }
+
+    [JsonProperty("infoTier")] public string InfoTier { get; set; }
+
+    [JsonProperty("isEnabled")] public bool IsEnabled { get; set; }
+
+    [JsonProperty("legionId")] public string LegionId { get; set; }
+
+    [JsonProperty("modelScale")] public string ModelScale { get; set; }
+
+    [JsonProperty("moveSpeed")] public string MoveSpeed { get; set; }
+
+    [JsonProperty("moveType")] public string MoveType { get; set; }
+
+    [JsonProperty("mp")] public string Mp { get; set; }
+
+    [JsonProperty("mspdText")] public string MspdText { get; set; }
+
+    [JsonProperty("mythiumCost")] public string MythiumCost { get; set; }
+
+    [JsonProperty("name")] public string Name { get; set; }
+
+    [JsonProperty("radius")] public string Radius { get; set; }
+
+    [JsonProperty("rangeText")] public string RangeText { get; set; }
+
+    [JsonProperty("sortOrder")] public string SortOrder { get; set; }
+
+    [JsonProperty("splashPath")] public string SplashPath { get; set; }
+
+    [JsonProperty("stockMax")] public string StockMax { get; set; }
+
+    [JsonProperty("stockTime")] public string StockTime { get; set; }
+
+    [JsonProperty("tooltip")] public string Tooltip { get; set; }
+
+    [JsonProperty("totalValue")] public string TotalValue { get; set; }
+
+    [JsonProperty("unitClass")] public string UnitClass { get; set; }
+
+    [JsonProperty("upgradesFrom")] public List<object> UpgradesFrom { get; set; }
+
+    public bool Equals(UnitStats other)
+    {
+        if (other == null)
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return false;
         }
 
-        public bool Equals(UnitStats other)
-        {
-            if (other == null)
-                return false;
+        return AttackRange == other.AttackRange && GoldCost == other.GoldCost && MythiumCost == other.MythiumCost && DmgMax == other.DmgMax && Hp == other.Hp && Flags == other.Flags && Tooltip == other.Tooltip && ArmorType == other.ArmorType && AvgDmg == other.AvgDmg && AvgDmgDiff == other.AvgDmgDiff && SortOrder == other.SortOrder && AvgCostDiff == other.AvgCostDiff && AvgMspdDiff == other.AvgMspdDiff && IsEnabled == other.IsEnabled && Abilities.SequenceEqual(other.Abilities) && AvgHpDiff == other.AvgHpDiff && DescriptionId == other.DescriptionId && AttackMode == other.AttackMode && AvgHp == other.AvgHp && IncomeBonus == other.IncomeBonus && InfoSketchfab == other.InfoSketchfab && AvgMspd == other.AvgMspd && UnitClass == other.UnitClass && TotalValue == other.TotalValue && Mp == other.Mp && UpgradesFrom.SequenceEqual(other.UpgradesFrom) && LegionId == other.LegionId && ModelScale == other.ModelScale && DmgExpected == other.DmgExpected && SplashPath == other.SplashPath && InfoTier == other.InfoTier && GoldValue == other.GoldValue && MoveType == other.MoveType && AttackSpeed == other.AttackSpeed && MoveSpeed == other.MoveSpeed && GoldBounty == other.GoldBounty && AttackType == other.AttackType && UpgradesFrom == other.UpgradesFrom && AttackSpeed == other.AttackSpeed && Name == other.Name && AvgAspdDiff == other.AvgAspdDiff && DmgBase == other.DmgBase && IconPath == other.IconPath && MoveSpeed == other.MoveSpeed && AvgAspd == other.AvgAspd && AvgCost == other.AvgCost && CategoryClass == other.CategoryClass;
+    }
 
-            return AttackRange == other.AttackRange && GoldCost == other.GoldCost && MythiumCost == other.MythiumCost && MaxDamage == other.MaxDamage && Hp == other.Hp && Flags == other.Flags && Tooltip == other.Tooltip && ArmorType == other.ArmorType && AvgDmg == other.AvgDmg && AvgDmgDiff == other.AvgDmgDiff && SortHelper == other.SortHelper && AvgCostDiff == other.AvgCostDiff && AvgMspdDiff == other.AvgMspdDiff && IsEnabled == other.IsEnabled && Abilities.SequenceEqual(other.Abilities) && AvgHpDiff == other.AvgHpDiff && DescriptionId == other.DescriptionId && AttackMode == other.AttackMode && AvgHp == other.AvgHp && IncomeBonus == other.IncomeBonus && SketchfabUrl == other.SketchfabUrl && AvgMspd == other.AvgMspd && UnitClass == other.UnitClass && TotalValue == other.TotalValue && Mp == other.Mp && UpgradesTo.SequenceEqual(other.UpgradesTo) && LegionId == other.LegionId && ModelScale == other.ModelScale && ExpectedDamage == other.ExpectedDamage && SplashPath == other.SplashPath && InfoTier == other.InfoTier && GoldValue == other.GoldValue && MoveType == other.MoveType && AttackSpeedInverted == other.AttackSpeedInverted && MoveSpeed == other.MoveSpeed && GoldBounty == other.GoldBounty && AttackType == other.AttackType && UpgradesFrom == other.UpgradesFrom && AttackSpeed == other.AttackSpeed && Name == other.Name && AvgAspdDiff == other.AvgAspdDiff && BaseDamage == other.BaseDamage && IconPath == other.IconPath && MoveSpeedText == other.MoveSpeedText && AvgAspd == other.AvgAspd && AvgCost == other.AvgCost && CategoryClass == other.CategoryClass;
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var results = new List<ValidationResult>();
+
+        if (string.IsNullOrWhiteSpace(AttackRange))
+        {
+            results.Add(new ValidationResult("AttackRange cannot be null or whitespace."));
         }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            var results = new List<ValidationResult>();
+        // Add more validation rules for other properties as needed
 
-            if (string.IsNullOrWhiteSpace(AttackRange))
-            {
-                results.Add(new ValidationResult("AttackRange cannot be null or whitespace."));
-            }
+        return results;
+    }
 
-            // Add more validation rules for other properties as needed
-
-            return results;
-        }
+    /// <summary>
+    ///     Returns the JSON string presentation of the object
+    /// </summary>
+    /// <returns>JSON string presentation of the object</returns>
+    public virtual string ToJson()
+    {
+        return JsonConvert.SerializeObject(this, Formatting.Indented);
     }
 }
